@@ -9,9 +9,9 @@ const corsHeaders = {
 
 let pool: any = null;
 
-function getPool() {
+async function getPool() {
   if (!pool) {
-    pool = mysql.createConnection({
+    pool = await mysql.createConnection({
       host: Deno.env.get("REMOTE_DB_HOST"),
       user: Deno.env.get("REMOTE_DB_USER"),
       database: Deno.env.get("REMOTE_DB_NAME"),
