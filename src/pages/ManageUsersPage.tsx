@@ -5,7 +5,7 @@ import {
   Search, Ban, Eye, ChevronLeft, ChevronRight, Loader2, Users,
   Wallet, IndianRupee, ArrowUpDown, Filter, X, Plus, Minus,
   Phone, Globe, Calendar, Shield, TrendingUp, TrendingDown,
-  CreditCard, UserCheck, Copy, RefreshCw
+  CreditCard, UserCheck, Copy, RefreshCw, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
