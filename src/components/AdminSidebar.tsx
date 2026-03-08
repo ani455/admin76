@@ -127,7 +127,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         collapsed ? "w-16" : "w-64"
       }`}
       style={{
-        background: 'linear-gradient(180deg, hsl(var(--sidebar-background)) 0%, hsl(225, 20%, 10%) 100%)',
+        background: 'hsl(var(--sidebar-background))',
         borderRight: '1px solid hsl(var(--sidebar-border))',
       }}
     >
