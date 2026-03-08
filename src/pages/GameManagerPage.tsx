@@ -39,13 +39,13 @@ export default function GameManagerPage() {
         className="flex items-center gap-3 mb-6"
       >
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
-          background: 'hsl(160, 84%, 39% / 0.12)',
-          border: '1px solid hsl(160, 84%, 39% / 0.15)',
+          background: 'hsl(var(--primary) / 0.12)',
+          border: '1px solid hsl(var(--primary) / 0.15)',
         }}>
-          <GameIcon className="w-5 h-5" style={{ color: 'hsl(160, 84%, 45%)' }} />
+          <GameIcon className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white font-display">{gameType} Manager</h2>
+          <h2 className="text-lg font-bold text-foreground font-display">{gameType} Manager</h2>
           <p className="text-[11px] text-muted-foreground font-medium">{duration} duration periods</p>
         </div>
       </motion.div>
