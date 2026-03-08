@@ -74,6 +74,12 @@ export default function GameManagerPage() {
     refetchInterval: 2000,
   });
 
+  const { data: currentPrediction } = useQuery({
+    queryKey: ["current-prediction", gameTypeDb, duration],
+    queryFn: () => remoteDb("get_current_prediction", { game_type: gameTypeDb, duration }),
+    refetchInterval: 3000,
+  });
+
   // Set prediction mutation
   const setPredictionMutation = useMutation({
     mutationFn: () => remoteDb("set_game_result", {
