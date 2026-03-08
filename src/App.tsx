@@ -25,6 +25,10 @@ import BankDetailsPage from "./pages/BankDetailsPage";
 import IllegalBetPage from "./pages/IllegalBetPage";
 import SupportPage from "./pages/SupportPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import UplineChainPage from "./pages/UplineChainPage";
+import SubordinateDataPage from "./pages/SubordinateDataPage";
+import BalanceDeductionPage from "./pages/BalanceDeductionPage";
+import UsersActivityPage from "./pages/UsersActivityPage";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
@@ -68,7 +72,10 @@ const App = () => (
               <Route path="/finance/withdraw-sent" element={<WithdrawSentPage />} />
               <Route path="/finance/withdraw-reject" element={<WithdrawRejectPage />} />
               <Route path="/support/:type" element={<SupportPage />} />
-              <Route path="/extra/:type" element={<PlaceholderPage />} />
+              <Route path="/extra/upline-chain" element={<UplineChainPage />} />
+              <Route path="/extra/subordinate-data" element={<SubordinateDataPage />} />
+              <Route path="/extra/balance-deduction" element={<BalanceDeductionPage />} />
+              <Route path="/extra/users-activity" element={<UsersActivityPage />} />
               <Route path="/manage/users" element={<ManageUsersPage />} />
               <Route path="/manage/gift-code" element={<GiftCodePage />} />
               <Route path="/manage/bonus" element={<BonusManagePage />} />
