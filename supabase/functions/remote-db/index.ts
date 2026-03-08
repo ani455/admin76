@@ -203,6 +203,76 @@ serve(async (req) => {
         break;
       }
 
+      // ===== USER DETAIL (Advanced) =====
+      case "get_user_detail": {
+        const { userId } = params;
+        const [[user]] = await db.query(
+          `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, s.ip as ip_address, s.status, s.createdate as created_at, s.account_frozen, s.name as raw_name,
+                  COALESCE(sk.motta, 0) as balance,
+                  (SELECT COALESCE(SUM(motta), 0) FROM thevani WHERE balakedara = s.id AND sthiti='1') as total_recharge,
+                  (SELECT COALESCE(SUM(motta), 0) FROM hintegedukolli WHERE balakedara = s.id AND sthiti='1') as total_withdraw,
+                  (SELECT COUNT(*) FROM thevani WHERE balakedara = s.id) as deposit_count,
+                  (SELECT COUNT(*) FROM hintegedukolli WHERE balakedara = s.id) as withdraw_count,
+                  (SELECT name FROM bankcard WHERE userid = s.id ORDER BY id ASC LIMIT 1) as name
+           FROM shonu_subjects s
+           LEFT JOIN shonu_kaichila sk ON sk.balakedara = s.id
+           WHERE s.id = ?`,
+          [userId]
+        );
+        if (!user) throw new Error("User not found");
+
+        // Recent deposits
+        const [deposits] = await db.query(
+          `SELECT shonu as id, motta as amount, ullekha as utr, dinankavannuracisi as created_at,
+                  CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
+           FROM thevani WHERE balakedara = ? ORDER BY shonu DESC LIMIT 10`, [userId]
+        );
+
+        // Recent withdrawals
+        const [withdrawals] = await db.query(
+          `SELECT shonu as id, motta as amount, dinankavannuracisi as created_at,
+                  CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
+           FROM hintegedukolli WHERE balakedara = ? ORDER BY shonu DESC LIMIT 10`, [userId]
+        );
+
+        // Bank details
+        const [banks] = await db.query("SELECT id, name, type, account FROM bankcard WHERE userid = ?", [userId]);
+
+        // Referrals (users who used this user's code)
+        const [referrals] = await db.query(
+          `SELECT id, mobile, createdate as created_at FROM shonu_subjects WHERE code = ? LIMIT 20`, [user.owncode]
+        );
+
+        // Bet stats across all tables
+        let totalBetAmount = 0, totalWinAmount = 0, totalBetCount = 0;
+        const betTables = [
+          'bajikattuttate', 'bajikattuttate_drei', 'bajikattuttate_funf', 'bajikattuttate_zehn',
+          'bajikattuttate_kemuru', 'bajikattuttate_kemuru_drei', 'bajikattuttate_kemuru_funf', 'bajikattuttate_kemuru_zehn',
+          'bajikattuttate_aidudi', 'bajikattuttate_aidudi_drei', 'bajikattuttate_aidudi_funf', 'bajikattuttate_aidudi_zehn',
+        ];
+        for (const tbl of betTables) {
+          try {
+            const [[r]] = await db.query(
+              `SELECT COUNT(*) as cnt, COALESCE(SUM(ketebida),0) as tb, COALESCE(SUM(CASE WHEN phalaphala='gagner' THEN sesabida ELSE 0 END),0) as tw
+               FROM \`${tbl}\` WHERE byabaharkarta = ?`, [userId]
+            );
+            totalBetCount += Number(r.cnt);
+            totalBetAmount += Number(r.tb);
+            totalWinAmount += Number(r.tw);
+          } catch (_) {}
+        }
+
+        result = {
+          user,
+          deposits,
+          withdrawals,
+          banks,
+          referrals,
+          betStats: { totalBetCount, totalBetAmount, totalWinAmount }
+        };
+        break;
+      }
+
       // ===== DEPOSITS =====
       case "get_pending_deposits": {
         const { search } = params || {};
