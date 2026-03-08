@@ -696,7 +696,7 @@ serve(async (req) => {
       }
       case "respond_support": {
         const { id, remarks } = params;
-        await db.query("UPDATE your_table SET remarks = ?, status = 1 WHERE id = ?", [remarks, id]);
+        await db.query("UPDATE user_support SET remarks = ?, status = 1 WHERE id = ?", [remarks, id]);
         result = { success: true };
         break;
       }
