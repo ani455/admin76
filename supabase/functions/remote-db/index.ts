@@ -688,7 +688,7 @@ serve(async (req) => {
 
         const [rows] = await db.query(
           `SELECT id, userid, deposit_order_no as order_no, bank_account_number as bank_account, ifsc, order_amount as amount, text_content as message, remarks, status, prob as problem_type
-           FROM your_table WHERE prob = ? ORDER BY id DESC LIMIT 100`,
+           FROM user_support WHERE prob = ? ORDER BY id DESC LIMIT 100`,
           [probFilter]
         );
         result = rows;
