@@ -25,6 +25,10 @@ import BankDetailsPage from "./pages/BankDetailsPage";
 import IllegalBetPage from "./pages/IllegalBetPage";
 import SupportPage from "./pages/SupportPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import UplineChainPage from "./pages/UplineChainPage";
+import SubordinateDataPage from "./pages/SubordinateDataPage";
+import BalanceDeductionPage from "./pages/BalanceDeductionPage";
+import UsersActivityPage from "./pages/UsersActivityPage";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
