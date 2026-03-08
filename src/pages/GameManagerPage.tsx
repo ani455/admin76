@@ -20,9 +20,9 @@ export default function GameManagerPage() {
   const path = location.pathname;
 
   let gameType = "WinGo";
-  let gameIcon = Gamepad2;
-  if (path.includes("/k3")) { gameType = "K3"; gameIcon = Dice3; }
-  if (path.includes("/5d")) { gameType = "5D"; gameIcon = Dice5; }
+  let GameIcon: React.ElementType = Gamepad2;
+  if (path.includes("/k3")) { gameType = "K3"; GameIcon = Dice3; }
+  if (path.includes("/5d")) { gameType = "5D"; GameIcon = Dice5; }
 
   const duration = path.split("/").pop() || "1min";
 
