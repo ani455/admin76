@@ -84,7 +84,7 @@ export default function GameManagerPage() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.02 }}
                   >
-                    <td className="font-mono font-semibold text-white">{p.period_number}</td>
+                    <td className="font-mono font-semibold text-foreground">{p.period_number}</td>
                     <td className="text-center">
                       <span
                         className="inline-flex w-7 h-7 rounded-lg items-center justify-center text-[11px] font-bold text-white"
