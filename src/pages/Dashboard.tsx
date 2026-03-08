@@ -50,28 +50,20 @@ export default function Dashboard() {
 
   type CardColor = "blue" | "teal" | "orange" | "red";
 
-  const colorMap: Record<CardColor, { gradient: string; glow: string; iconColor: string; iconBg: string }> = {
+  const colorMap: Record<CardColor, { iconColor: string; iconBg: string }> = {
     blue: {
-      gradient: 'linear-gradient(145deg, hsl(220, 35%, 18%) 0%, hsl(220, 25%, 13%) 100%)',
-      glow: 'hsl(220, 90%, 56% / 0.06)',
       iconColor: 'hsl(220, 90%, 65%)',
       iconBg: 'hsl(220, 90%, 56% / 0.12)',
     },
     teal: {
-      gradient: 'linear-gradient(145deg, hsl(170, 30%, 17%) 0%, hsl(170, 20%, 12%) 100%)',
-      glow: 'hsl(170, 80%, 45% / 0.06)',
       iconColor: 'hsl(170, 80%, 50%)',
       iconBg: 'hsl(170, 80%, 45% / 0.12)',
     },
     orange: {
-      gradient: 'linear-gradient(145deg, hsl(30, 35%, 17%) 0%, hsl(30, 25%, 12%) 100%)',
-      glow: 'hsl(38, 92%, 50% / 0.06)',
       iconColor: 'hsl(38, 92%, 58%)',
       iconBg: 'hsl(38, 92%, 50% / 0.12)',
     },
     red: {
-      gradient: 'linear-gradient(145deg, hsl(0, 30%, 18%) 0%, hsl(0, 20%, 13%) 100%)',
-      glow: 'hsl(0, 72%, 51% / 0.06)',
       iconColor: 'hsl(0, 72%, 60%)',
       iconBg: 'hsl(0, 72%, 51% / 0.12)',
     },
@@ -104,8 +96,8 @@ export default function Dashboard() {
           const c = colorMap[card.color];
           return (
             <motion.div key={card.title} variants={cardAnim} whileHover={{ scale: 1.03, y: -2 }}
-              className="rounded-2xl p-4 lg:p-5 relative overflow-hidden cursor-default group"
-              style={{ background: c.gradient, border: '1px solid hsl(var(--border))', boxShadow: `0 0 30px ${c.glow}` }}>
+              className="rounded-2xl p-4 lg:p-5 relative overflow-hidden cursor-default group glass-card-solid"
+            >
               <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: c.iconColor }} />
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-3">
@@ -121,6 +113,7 @@ export default function Dashboard() {
         })}
       </motion.div>
 
+      {/* Game Settings */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="glass-card-solid rounded-2xl p-6 lg:p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'hsl(var(--primary) / 0.12)', border: '1px solid hsl(var(--primary) / 0.15)' }}>
@@ -152,8 +145,7 @@ export default function Dashboard() {
         </div>
 
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => settingsMutation.mutate()} disabled={settingsMutation.isPending}
-          className="btn-neon inline-flex items-center gap-2.5 px-6 py-3 text-[13px] font-display disabled:opacity-50 login-shimmer-btn"
-          style={{ background: 'linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%), hsl(220, 90%, 56%))', backgroundSize: '200% 100%' }}>
+          className="btn-neon inline-flex items-center gap-2.5 px-6 py-3 text-[13px] font-display disabled:opacity-50 login-shimmer-btn">
           <Save className="w-4 h-4" />
           {settingsMutation.isPending ? "Saving..." : "Save Settings"}
         </motion.button>

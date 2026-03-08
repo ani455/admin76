@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./pages/Dashboard";
 import ManageUsersPage from "./pages/ManageUsersPage";
@@ -55,44 +56,46 @@ function ProtectedRoutes() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route element={<ProtectedRoutes />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/wingo/:duration" element={<GameManagerPage />} />
-              <Route path="/k3/:duration" element={<GameManagerPage />} />
-              <Route path="/5d/:duration" element={<GameManagerPage />} />
-              <Route path="/finance/usdt-rate" element={<UsdtRatePage />} />
-              <Route path="/finance/deposit-update" element={<DepositUpdatePage />} />
-              <Route path="/finance/withdraw-apply" element={<WithdrawManagePage />} />
-              <Route path="/finance/withdraw-sent" element={<WithdrawSentPage />} />
-              <Route path="/finance/withdraw-reject" element={<WithdrawRejectPage />} />
-              <Route path="/support/:type" element={<SupportPage />} />
-              <Route path="/extra/upline-chain" element={<UplineChainPage />} />
-              <Route path="/extra/subordinate-data" element={<SubordinateDataPage />} />
-              <Route path="/extra/balance-deduction" element={<BalanceDeductionPage />} />
-              <Route path="/extra/users-activity" element={<UsersActivityPage />} />
-              <Route path="/manage/users" element={<ManageUsersPage />} />
-              <Route path="/manage/gift-code" element={<GiftCodePage />} />
-              <Route path="/manage/bonus" element={<BonusManagePage />} />
-              <Route path="/manage/users-deposit" element={<BonusManagePage />} />
-              <Route path="/manage/illegal-bet" element={<IllegalBetPage />} />
-              <Route path="/manage/bank-details" element={<BankDetailsPage />} />
-              <Route path="/manage/admin-password" element={<AdminPasswordPage />} />
-              <Route path="/manage/check-ip" element={<CheckIpPage />} />
-              <Route path="/manage/ban-users" element={<BanUsersPage />} />
-              <Route path="/manage/users-query" element={<UsersQueryPage />} />
-              <Route path="/manage/demo-user" element={<DemoUserPage />} />
-              <Route path="/manage/agent-user" element={<AgentUserPage />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route element={<ProtectedRoutes />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/wingo/:duration" element={<GameManagerPage />} />
+                <Route path="/k3/:duration" element={<GameManagerPage />} />
+                <Route path="/5d/:duration" element={<GameManagerPage />} />
+                <Route path="/finance/usdt-rate" element={<UsdtRatePage />} />
+                <Route path="/finance/deposit-update" element={<DepositUpdatePage />} />
+                <Route path="/finance/withdraw-apply" element={<WithdrawManagePage />} />
+                <Route path="/finance/withdraw-sent" element={<WithdrawSentPage />} />
+                <Route path="/finance/withdraw-reject" element={<WithdrawRejectPage />} />
+                <Route path="/support/:type" element={<SupportPage />} />
+                <Route path="/extra/upline-chain" element={<UplineChainPage />} />
+                <Route path="/extra/subordinate-data" element={<SubordinateDataPage />} />
+                <Route path="/extra/balance-deduction" element={<BalanceDeductionPage />} />
+                <Route path="/extra/users-activity" element={<UsersActivityPage />} />
+                <Route path="/manage/users" element={<ManageUsersPage />} />
+                <Route path="/manage/gift-code" element={<GiftCodePage />} />
+                <Route path="/manage/bonus" element={<BonusManagePage />} />
+                <Route path="/manage/users-deposit" element={<BonusManagePage />} />
+                <Route path="/manage/illegal-bet" element={<IllegalBetPage />} />
+                <Route path="/manage/bank-details" element={<BankDetailsPage />} />
+                <Route path="/manage/admin-password" element={<AdminPasswordPage />} />
+                <Route path="/manage/check-ip" element={<CheckIpPage />} />
+                <Route path="/manage/ban-users" element={<BanUsersPage />} />
+                <Route path="/manage/users-query" element={<UsersQueryPage />} />
+                <Route path="/manage/demo-user" element={<DemoUserPage />} />
+                <Route path="/manage/agent-user" element={<AgentUserPage />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
