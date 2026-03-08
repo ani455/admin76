@@ -139,8 +139,8 @@
 }
 
 @keyframes borderGlow {
-  0%, 100% { border-color: hsl(160, 84%, 39% / 0.15); }
-  50% { border-color: hsl(160, 84%, 39% / 0.35); }
+  0%, 100% { border-color: hsl(220, 90%, 56% / 0.15); }
+  50% { border-color: hsl(220, 90%, 56% / 0.35); }
 }
 
 /* Animation classes */
