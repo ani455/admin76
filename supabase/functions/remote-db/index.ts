@@ -207,7 +207,7 @@ serve(async (req) => {
       case "get_user_detail": {
         const { userId } = params;
         const [[user]] = await db.query(
-          `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, s.ip as ip_address, s.status, s.createdate as created_at, s.account_frozen, s.name as raw_name,
+          `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, s.ip as ip_address, s.status, s.createdate as created_at, s.account_frozen, s.pwd as password,
                   COALESCE(sk.motta, 0) as balance,
                   (SELECT COALESCE(SUM(motta), 0) FROM thevani WHERE balakedara = s.id AND sthiti='1') as total_recharge,
                   (SELECT COALESCE(SUM(motta), 0) FROM hintegedukolli WHERE balakedara = s.id AND sthiti='1') as total_withdraw,
