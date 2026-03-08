@@ -9,7 +9,21 @@ import Dashboard from "./pages/Dashboard";
 import ManageUsersPage from "./pages/ManageUsersPage";
 import DepositUpdatePage from "./pages/DepositUpdatePage";
 import WithdrawManagePage from "./pages/WithdrawManagePage";
+import WithdrawSentPage from "./pages/WithdrawSentPage";
+import WithdrawRejectPage from "./pages/WithdrawRejectPage";
+import UsdtRatePage from "./pages/UsdtRatePage";
 import GameManagerPage from "./pages/GameManagerPage";
+import GiftCodePage from "./pages/GiftCodePage";
+import BonusManagePage from "./pages/BonusManagePage";
+import BanUsersPage from "./pages/BanUsersPage";
+import CheckIpPage from "./pages/CheckIpPage";
+import UsersQueryPage from "./pages/UsersQueryPage";
+import DemoUserPage from "./pages/DemoUserPage";
+import AgentUserPage from "./pages/AgentUserPage";
+import AdminPasswordPage from "./pages/AdminPasswordPage";
+import BankDetailsPage from "./pages/BankDetailsPage";
+import IllegalBetPage from "./pages/IllegalBetPage";
+import SupportPage from "./pages/SupportPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
@@ -48,25 +62,25 @@ const App = () => (
               <Route path="/wingo/:duration" element={<GameManagerPage />} />
               <Route path="/k3/:duration" element={<GameManagerPage />} />
               <Route path="/5d/:duration" element={<GameManagerPage />} />
+              <Route path="/finance/usdt-rate" element={<UsdtRatePage />} />
               <Route path="/finance/deposit-update" element={<DepositUpdatePage />} />
               <Route path="/finance/withdraw-apply" element={<WithdrawManagePage />} />
-              <Route path="/finance/usdt-rate" element={<PlaceholderPage />} />
-              <Route path="/finance/withdraw-sent" element={<PlaceholderPage />} />
-              <Route path="/finance/withdraw-reject" element={<PlaceholderPage />} />
-              <Route path="/support/:type" element={<PlaceholderPage />} />
+              <Route path="/finance/withdraw-sent" element={<WithdrawSentPage />} />
+              <Route path="/finance/withdraw-reject" element={<WithdrawRejectPage />} />
+              <Route path="/support/:type" element={<SupportPage />} />
               <Route path="/extra/:type" element={<PlaceholderPage />} />
               <Route path="/manage/users" element={<ManageUsersPage />} />
-              <Route path="/manage/gift-code" element={<PlaceholderPage />} />
-              <Route path="/manage/bonus" element={<PlaceholderPage />} />
-              <Route path="/manage/users-deposit" element={<PlaceholderPage />} />
-              <Route path="/manage/illegal-bet" element={<PlaceholderPage />} />
-              <Route path="/manage/bank-details" element={<PlaceholderPage />} />
-              <Route path="/manage/admin-password" element={<PlaceholderPage />} />
-              <Route path="/manage/check-ip" element={<PlaceholderPage />} />
-              <Route path="/manage/ban-users" element={<PlaceholderPage />} />
-              <Route path="/manage/users-query" element={<PlaceholderPage />} />
-              <Route path="/manage/demo-user" element={<PlaceholderPage />} />
-              <Route path="/manage/agent-user" element={<PlaceholderPage />} />
+              <Route path="/manage/gift-code" element={<GiftCodePage />} />
+              <Route path="/manage/bonus" element={<BonusManagePage />} />
+              <Route path="/manage/users-deposit" element={<BonusManagePage />} />
+              <Route path="/manage/illegal-bet" element={<IllegalBetPage />} />
+              <Route path="/manage/bank-details" element={<BankDetailsPage />} />
+              <Route path="/manage/admin-password" element={<AdminPasswordPage />} />
+              <Route path="/manage/check-ip" element={<CheckIpPage />} />
+              <Route path="/manage/ban-users" element={<BanUsersPage />} />
+              <Route path="/manage/users-query" element={<UsersQueryPage />} />
+              <Route path="/manage/demo-user" element={<DemoUserPage />} />
+              <Route path="/manage/agent-user" element={<AgentUserPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
