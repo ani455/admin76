@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import {
   LayoutDashboard, Gamepad2, Dice3, Dice5, Wallet,
   HeadphonesIcon, Settings2, Users, ChevronDown, ChevronLeft,
   LogOut, Gift, UserCheck, UserX, Shield, CreditCard,
   Building2, HelpCircle, ArrowDownUp, ArrowUpDown, Ban,
   KeyRound, Wifi, MessageSquare, DollarSign, UserPlus,
-  Bot, Link2, FileText, MinusCircle, ScrollText,
+  Bot, Link2, FileText, MinusCircle, ScrollText, Sun, Moon,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MenuItem { title: string; path: string; icon: React.ElementType; }
 interface MenuGroup { title: string; icon: React.ElementType; items: MenuItem[]; }
@@ -103,6 +105,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const { signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     const active = menuGroups.find((g) =>
@@ -150,10 +153,10 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
               <Shield className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="text-[14px] font-bold text-foreground truncate leading-tight font-display tracking-tight">
+              <p className="text-[14px] font-bold text-sidebar-foreground truncate leading-tight font-display tracking-tight">
                 ALADDINN
               </p>
-              <p className="text-[10px] text-muted-foreground font-medium leading-tight font-mono">
+              <p className="text-[10px] text-sidebar-foreground/50 font-medium leading-tight font-mono">
                 Admin v2.0
               </p>
             </div>
@@ -161,7 +164,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         )}
         <button
           onClick={onToggle}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200 flex-shrink-0"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-all duration-200 flex-shrink-0"
         >
           <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`} />
         </button>
@@ -174,8 +177,8 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
           to="/"
           className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 mb-1 ${
             isActive("/")
-              ? "text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+              ? "text-white"
+              : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           }`}
           style={isActive("/") ? {
             background: 'linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.08))',
@@ -183,10 +186,10 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
           } : {}}
         >
           <LayoutDashboard className="w-[18px] h-[18px] flex-shrink-0" />
-          {!collapsed && <span className="font-display">{isActive("/") ? <span className="text-primary">Dashboard</span> : "Dashboard"}</span>}
+          {!collapsed && <span className="font-display">{isActive("/") ? <span style={{ color: 'hsl(var(--sidebar-primary))' }}>Dashboard</span> : "Dashboard"}</span>}
           {isActive("/") && !collapsed && (
-            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
-              style={{ boxShadow: '0 0 6px hsl(var(--primary))' }}
+            <div className="ml-auto w-1.5 h-1.5 rounded-full"
+              style={{ background: 'hsl(var(--sidebar-primary))', boxShadow: '0 0 6px hsl(var(--sidebar-primary))' }}
             />
           )}
         </Link>
@@ -202,53 +205,99 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                 onClick={() => !collapsed && toggleGroup(group.title)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
                   hasActive
-                    ? "text-foreground bg-secondary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    ? "text-sidebar-foreground bg-sidebar-accent"
+                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                 }`}
               >
                 <group.icon className="w-[18px] h-[18px] flex-shrink-0" />
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left truncate font-display">{group.title}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                    <motion.div
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </motion.div>
                   </>
                 )}
               </button>
 
-              {!collapsed && isOpen && (
-                <div className="ml-[22px] pl-3 border-l border-border mt-1 mb-1.5 space-y-0.5">
-                  {group.items.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[12px] transition-all duration-200 ${
-                        isActive(item.path)
-                          ? "text-primary font-semibold bg-primary/10"
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200 ${
-                        isActive(item.path)
-                          ? "bg-primary"
-                          : "bg-muted-foreground/30"
-                      }`}
-                        style={isActive(item.path) ? { boxShadow: '0 0 6px hsl(var(--primary))' } : {}}
-                      />
-                      <span className="truncate">{item.title}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence initial={false}>
+                {!collapsed && isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="ml-[22px] pl-3 border-l border-sidebar-border mt-1 mb-1.5 space-y-0.5">
+                      {group.items.map((item, idx) => (
+                        <motion.div
+                          key={item.path}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.03, duration: 0.25 }}
+                        >
+                          <Link
+                            to={item.path}
+                            className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[12px] transition-all duration-200 ${
+                              isActive(item.path)
+                                ? "font-semibold"
+                                : "text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/60"
+                            }`}
+                            style={isActive(item.path) ? { color: 'hsl(var(--sidebar-primary))' } : {}}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200`}
+                              style={isActive(item.path)
+                                ? { background: 'hsl(var(--sidebar-primary))', boxShadow: '0 0 6px hsl(var(--sidebar-primary))' }
+                                : { background: 'hsl(var(--sidebar-foreground) / 0.2)' }
+                              }
+                            />
+                            <span className="truncate">{item.title}</span>
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="px-2.5 py-3 border-t border-sidebar-border">
+      {/* Bottom actions */}
+      <div className="px-2.5 py-3 border-t border-sidebar-border space-y-1">
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-all duration-200"
+        >
+          <motion.div
+            key={theme}
+            initial={{ rotate: -90, scale: 0.5, opacity: 0 }}
+            animate={{ rotate: 0, scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {theme === "dark" ? (
+              <Sun className="w-[18px] h-[18px]" />
+            ) : (
+              <Moon className="w-[18px] h-[18px]" />
+            )}
+          </motion.div>
+          {!collapsed && (
+            <span className="font-display">
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </span>
+          )}
+        </button>
+
+        {/* Logout */}
         <button
           onClick={() => signOut()}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-all duration-200"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-red-400 hover:bg-red-500/10 transition-all duration-200"
         >
           <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
           {!collapsed && <span className="font-display">Logout</span>}

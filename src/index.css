@@ -5,7 +5,70 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  /* ===== LIGHT MODE ===== */
+  :root, .light {
+    --background: 220 20% 97%;
+    --foreground: 224 20% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 20% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 20% 14%;
+
+    --primary: 220 90% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 224 20% 14%;
+
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 220 90% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 88%;
+    --input: 220 14% 88%;
+    --ring: 220 90% 52%;
+    --radius: 0.75rem;
+
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --sidebar-background: 224 20% 14%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 220 90% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 15% 22%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 224 15% 22%;
+    --sidebar-ring: 220 90% 52%;
+
+    --login-bg: 220 20% 97%;
+    --login-card: 0 0% 100%;
+    --login-border: 220 14% 88%;
+    --login-input-bg: 220 14% 95%;
+    --login-muted: 220 10% 46%;
+    --login-accent: 220 90% 52%;
+    --login-accent-glow: 220 90% 52%;
+
+    --neon-green: 142 71% 40%;
+    --neon-blue: 220 90% 52%;
+    --neon-purple: 270 80% 55%;
+    --glass-bg: 0 0% 100%;
+    --glass-border: 220 14% 88%;
+  }
+
+  /* ===== DARK MODE ===== */
+  .dark {
     --background: 225 20% 11%;
     --foreground: 210 40% 96%;
 
@@ -74,7 +137,67 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Sora', 'Inter', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.4s ease, color 0.3s ease;
   }
+}
+
+/* ═══════════════════════════════════════════ */
+/*  THEME TRANSITION                           */
+/* ═══════════════════════════════════════════ */
+
+html.light, html.dark {
+  transition: background-color 0.4s ease;
+}
+
+html.light .glass-card {
+  background: hsl(0, 0%, 100% / 0.85);
+  border-color: hsl(220, 14%, 88% / 0.6);
+}
+
+html.light .glass-card-solid {
+  background: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(220, 20%, 96%) 100%);
+  border: 1px solid hsl(220, 14%, 88%);
+}
+
+html.light .glass-table {
+  background: hsl(0, 0%, 100%);
+  border: 1px solid hsl(220, 14%, 88%);
+}
+
+html.light .admin-table thead th {
+  background: hsl(220, 20%, 96%);
+  color: hsl(220, 10%, 46%);
+  border-bottom-color: hsl(220, 14%, 88%);
+}
+
+html.light .admin-table tbody td {
+  color: hsl(224, 20%, 30%);
+  border-bottom-color: hsl(220, 14%, 92%);
+}
+
+html.light .admin-table tbody tr:hover {
+  background: hsl(220, 20%, 97%);
+}
+
+html.light .search-input {
+  background: hsl(220, 14%, 96%);
+  border-color: hsl(220, 14%, 88%);
+  color: hsl(224, 20%, 14%);
+}
+
+html.light .search-input::placeholder {
+  color: hsl(220, 10%, 60%);
+}
+
+html.light .select-dark {
+  background: hsl(220, 14%, 96%);
+  border-color: hsl(220, 14%, 88%);
+  color: hsl(224, 20%, 14%);
+}
+
+html.light .select-dark option {
+  background: hsl(0, 0%, 100%);
+  color: hsl(224, 20%, 14%);
 }
 
 /* ═══════════════════════════════════════════ */
@@ -143,6 +266,12 @@
   50% { border-color: hsl(220, 90%, 56% / 0.35); }
 }
 
+@keyframes themeSwitch {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(0.85) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
 /* Animation classes */
 .login-float-in {
   animation: floatUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -159,6 +288,10 @@
 .morph-blob { animation: morphBlob 15s ease-in-out infinite; }
 .border-glow { animation: borderGlow 3s ease-in-out infinite; }
 
+.theme-switch-spin {
+  animation: themeSwitch 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.1s; }
 .stagger-3 { animation-delay: 0.15s; }
@@ -171,20 +304,23 @@
 /* ═══════════════════════════════════════════ */
 
 .glass-card {
-  background: hsl(225, 18%, 15% / 0.8);
+  background: hsl(var(--glass-bg) / 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid hsl(225, 15%, 24% / 0.5);
+  border: 1px solid hsl(var(--glass-border) / 0.5);
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .glass-card-solid {
-  background: linear-gradient(135deg, hsl(225, 18%, 16%) 0%, hsl(225, 20%, 12%) 100%);
-  border: 1px solid hsl(225, 15%, 22%);
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%);
+  border: 1px solid hsl(var(--border));
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .glass-table {
-  background: hsl(225, 18%, 14%);
-  border: 1px solid hsl(225, 15%, 20%);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 /* ═══════════════════════════════════════════ */
@@ -196,6 +332,9 @@
 ::-webkit-scrollbar-thumb { background: hsl(220, 12%, 20%); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(220, 12%, 30%); }
 
+.light ::-webkit-scrollbar-thumb { background: hsl(220, 12%, 80%); }
+.light ::-webkit-scrollbar-thumb:hover { background: hsl(220, 12%, 70%); }
+
 .sidebar-nav::-webkit-scrollbar { width: 3px; }
 .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); }
 
@@ -204,7 +343,7 @@
 /* ═══════════════════════════════════════════ */
 
 .table-row-hover { transition: background 0.2s ease; }
-.table-row-hover:hover { background: hsl(225, 15%, 12%); }
+.table-row-hover:hover { background: hsl(var(--muted) / 0.5); }
 
 .admin-table {
   width: 100%;
@@ -213,24 +352,26 @@
 }
 
 .admin-table thead th {
-  background: hsl(225, 18%, 13%);
-  color: hsl(220, 12%, 50%);
+  background: hsl(var(--muted) / 0.5);
+  color: hsl(var(--muted-foreground));
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 12px 16px;
-  border-bottom: 1px solid hsl(225, 15%, 20%);
+  border-bottom: 1px solid hsl(var(--border));
   white-space: nowrap;
   font-family: 'Sora', sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .admin-table tbody td {
   padding: 10px 16px;
-  border-bottom: 1px solid hsl(225, 15%, 17%);
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
   font-size: 12px;
-  color: hsl(210, 20%, 82%);
+  color: hsl(var(--foreground) / 0.85);
   white-space: nowrap;
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .admin-table tbody tr {
@@ -238,7 +379,7 @@
 }
 
 .admin-table tbody tr:hover {
-  background: hsl(225, 18%, 18%);
+  background: hsl(var(--muted) / 0.3);
 }
 
 .admin-table tbody tr:last-child td {
@@ -261,18 +402,18 @@
 /* ═══════════════════════════════════════════ */
 
 .btn-neon {
-  background: linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(220, 80%, 48%));
   color: white;
   font-weight: 600;
   border-radius: 12px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px hsl(220, 90%, 56% / 0.2);
+  box-shadow: 0 4px 20px hsl(var(--primary) / 0.2);
   position: relative;
   overflow: hidden;
 }
 
 .btn-neon:hover {
-  box-shadow: 0 6px 30px hsl(220, 90%, 56% / 0.35);
+  box-shadow: 0 6px 30px hsl(var(--primary) / 0.35);
   transform: translateY(-1px);
 }
 
@@ -299,9 +440,9 @@
 /* ═══════════════════════════════════════════ */
 
 .badge-success {
-  background: hsl(142, 71%, 45% / 0.12);
-  color: hsl(142, 71%, 55%);
-  border: 1px solid hsl(142, 71%, 45% / 0.2);
+  background: hsl(var(--success) / 0.12);
+  color: hsl(var(--success));
+  border: 1px solid hsl(var(--success) / 0.2);
   font-size: 10px;
   font-weight: 600;
   padding: 3px 10px;
@@ -309,9 +450,9 @@
 }
 
 .badge-danger {
-  background: hsl(0, 72%, 51% / 0.12);
-  color: hsl(0, 72%, 60%);
-  border: 1px solid hsl(0, 72%, 51% / 0.2);
+  background: hsl(var(--destructive) / 0.12);
+  color: hsl(var(--destructive));
+  border: 1px solid hsl(var(--destructive) / 0.2);
   font-size: 10px;
   font-weight: 600;
   padding: 3px 10px;
@@ -319,9 +460,9 @@
 }
 
 .badge-warning {
-  background: hsl(38, 92%, 50% / 0.12);
-  color: hsl(38, 92%, 60%);
-  border: 1px solid hsl(38, 92%, 50% / 0.2);
+  background: hsl(var(--warning) / 0.12);
+  color: hsl(var(--warning));
+  border: 1px solid hsl(var(--warning) / 0.2);
   font-size: 10px;
   font-weight: 600;
   padding: 3px 10px;
@@ -329,9 +470,9 @@
 }
 
 .badge-info {
-  background: hsl(210, 100%, 55% / 0.12);
-  color: hsl(210, 100%, 65%);
-  border: 1px solid hsl(210, 100%, 55% / 0.2);
+  background: hsl(var(--info) / 0.12);
+  color: hsl(var(--info));
+  border: 1px solid hsl(var(--info) / 0.2);
   font-size: 10px;
   font-weight: 600;
   padding: 3px 10px;
@@ -343,24 +484,24 @@
 /* ═══════════════════════════════════════════ */
 
 .search-input {
-  background: hsl(225, 20%, 12%);
-  border: 1px solid hsl(225, 15%, 22%);
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
   border-radius: 12px;
   padding: 10px 16px 10px 40px;
   font-size: 13px;
-  color: hsl(210, 40%, 96%);
+  color: hsl(var(--foreground));
   transition: all 0.3s ease;
   width: 100%;
 }
 
 .search-input::placeholder {
-  color: hsl(220, 12%, 35%);
+  color: hsl(var(--muted-foreground) / 0.6);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: hsl(220, 90%, 56% / 0.4);
-  box-shadow: 0 0 0 3px hsl(220, 90%, 56% / 0.08), 0 0 20px hsl(220, 90%, 56% / 0.05);
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.08), 0 0 20px hsl(var(--primary) / 0.05);
 }
 
 /* ═══════════════════════════════════════════ */
@@ -371,7 +512,7 @@
   position: absolute;
   width: 3px;
   height: 3px;
-  background: hsl(220, 90%, 56% / 0.4);
+  background: hsl(var(--primary) / 0.4);
   border-radius: 50%;
   pointer-events: none;
   animation: particleFloat linear infinite;
@@ -382,12 +523,12 @@
 /* ═══════════════════════════════════════════ */
 
 .select-dark {
-  background: hsl(225, 20%, 12%);
-  border: 1px solid hsl(225, 15%, 22%);
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 13px;
-  color: hsl(210, 40%, 96%);
+  color: hsl(var(--foreground));
   transition: all 0.3s ease;
   appearance: none;
   cursor: pointer;
@@ -395,11 +536,11 @@
 
 .select-dark:focus {
   outline: none;
-  border-color: hsl(220, 90%, 56% / 0.4);
-  box-shadow: 0 0 0 3px hsl(220, 90%, 56% / 0.08);
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.08);
 }
 
 .select-dark option {
-  background: hsl(225, 18%, 14%);
-  color: hsl(210, 40%, 96%);
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
 }
