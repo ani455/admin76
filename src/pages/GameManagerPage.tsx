@@ -30,7 +30,7 @@ export default function GameManagerPage() {
     <div className="animate-fade-in">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--stat-indigo) / 0.1)" }}>
-          <gameIcon className="w-6 h-6" style={{ color: "hsl(var(--stat-indigo))" }} />
+          <GameIcon className="w-6 h-6" style={{ color: "hsl(var(--stat-indigo))" }} />
         </div>
         <div>
           <h2 className="text-2xl font-extrabold text-foreground">{gameType} Manager</h2>
