@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "npm:mysql2@3.6.5/promise";
+import mysql from "npm:mysql2@3.6.5/promise";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
