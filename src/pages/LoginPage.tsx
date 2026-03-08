@@ -1,20 +1,34 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield } from "lucide-react";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
 
+  // Redirect if already logged in
+  if (user && !authLoading) {
+    navigate("/", { replace: true });
+    return null;
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) toast.error("Login failed: " + error.message);
+    if (error) {
+      toast.error("Login failed: " + error.message);
+    } else {
+      navigate("/", { replace: true });
+    }
     setLoading(false);
   };
 
