@@ -1,9 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+function Particles() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {Array.from({ length: 25 }).map((_, i) => (
+        <div
+          key={i}
+          className="particle"
+          style={{
+            left: `${Math.random() * 100}%`,
+            bottom: `-${Math.random() * 20}px`,
+            width: `${2 + Math.random() * 3}px`,
+            height: `${2 + Math.random() * 3}px`,
+            animationDuration: `${8 + Math.random() * 15}s`,
+            animationDelay: `${Math.random() * 10}s`,
+            opacity: 0.2 + Math.random() * 0.4,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,11 +37,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
 
-  // Redirect if already logged in
-  if (user && !authLoading) {
-    navigate("/", { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate("/", { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,137 +55,188 @@ export default function LoginPage() {
     setLoading(false);
   };
 
+  if (user && !authLoading) return null;
+
+  const stats = [
+    { icon: Users, label: "Active Users", value: "12.4K" },
+    { icon: TrendingUp, label: "Revenue", value: "₹8.2L" },
+    { icon: Zap, label: "Uptime", value: "99.9%" },
+  ];
+
   return (
-    <div className="min-h-screen flex bg-[hsl(var(--login-bg))]">
+    <div className="min-h-screen flex" style={{ background: 'hsl(230, 25%, 4%)' }}>
+      {/* Animated Orbs Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute w-[700px] h-[700px] rounded-full blur-[150px] morph-blob"
+          style={{
+            background: 'hsl(160, 84%, 39% / 0.08)',
+            top: '-15%', left: '-10%',
+            animation: 'loginGlow 12s ease-in-out infinite, morphBlob 20s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute w-[500px] h-[500px] rounded-full blur-[120px] morph-blob"
+          style={{
+            background: 'hsl(210, 100%, 55% / 0.06)',
+            bottom: '-10%', right: '-5%',
+            animation: 'loginGlow 15s ease-in-out infinite, morphBlob 25s ease-in-out infinite',
+            animationDelay: '3s',
+          }}
+        />
+        <div
+          className="absolute w-[300px] h-[300px] rounded-full blur-[80px]"
+          style={{
+            background: 'hsl(270, 80%, 55% / 0.04)',
+            top: '50%', left: '40%',
+            animation: 'loginGlow 10s ease-in-out infinite',
+            animationDelay: '5s',
+          }}
+        />
+      </div>
+
+      <Particles />
+
+      {/* Grid dots */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03]" style={{
+        backgroundImage: 'radial-gradient(circle, hsl(0 0% 100%) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+      }} />
+
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden items-center justify-center">
-        {/* Animated mesh gradient */}
-        <div className="absolute inset-0">
-          <div 
-            className="absolute w-[800px] h-[800px] rounded-full blur-[120px] opacity-30"
-            style={{ 
-              background: 'hsl(var(--login-accent))',
-              top: '-20%', left: '-10%',
-              animation: 'loginGlow 8s ease-in-out infinite'
-            }} 
-          />
-          <div 
-            className="absolute w-[600px] h-[600px] rounded-full blur-[100px] opacity-20"
-            style={{ 
-              background: 'hsl(160, 70%, 50%)',
-              bottom: '-15%', right: '-5%',
-              animation: 'loginGlow 10s ease-in-out infinite',
-              animationDelay: '2s'
-            }} 
-          />
-          <div 
-            className="absolute w-[400px] h-[400px] rounded-full blur-[80px] opacity-15"
-            style={{ 
-              background: 'hsl(200, 80%, 50%)',
-              top: '40%', left: '50%',
-              animation: 'loginGlow 6s ease-in-out infinite',
-              animationDelay: '4s'
-            }} 
-          />
-        </div>
-
-        {/* Grid dots */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{
-          backgroundImage: 'radial-gradient(circle, hsl(0 0% 100%) 1px, transparent 1px)',
-          backgroundSize: '32px 32px'
-        }} />
-
-        {/* Content */}
-        <div className="relative z-10 max-w-md px-12 login-float-in" style={{ animationDelay: '0.2s' }}>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--login-accent))] flex items-center justify-center shadow-[0_0_40px_hsl(var(--login-accent-glow)/0.3)]">
-              <Shield className="w-6 h-6 text-white" />
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 max-w-lg px-16"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="flex items-center gap-4 mb-10"
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center pulse-glow"
+              style={{
+                background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 30%))',
+              }}
+            >
+              <Shield className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <h2 className="text-2xl font-bold text-white tracking-tight font-display">
                 ALADDINN
               </h2>
-              <p className="text-[11px] text-[hsl(var(--login-muted))] font-medium">
+              <p className="text-xs text-[hsl(220,12%,40%)] font-medium font-mono">
                 Control Panel v2.0
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          <h1 className="text-[42px] font-extrabold text-white leading-[1.1] tracking-tight mb-5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-[52px] font-extrabold text-white leading-[1.05] tracking-[-0.03em] mb-6 font-display"
+          >
             Manage.<br />
-            <span className="text-[hsl(var(--login-accent))]">Monitor.</span><br />
+            <span style={{ color: 'hsl(160, 84%, 45%)' }}>Monitor.</span><br />
             Control.
-          </h1>
-          <p className="text-[15px] text-[hsl(220,12%,55%)] leading-relaxed max-w-sm">
-            Real-time analytics, user management, and complete platform control from one secure dashboard.
-          </p>
+          </motion.h1>
 
-          {/* Stats preview */}
-          <div className="mt-10 grid grid-cols-3 gap-4">
-            {[
-              { label: 'Active Users', value: '12.4K' },
-              { label: 'Revenue', value: '₹8.2L' },
-              { label: 'Uptime', value: '99.9%' },
-            ].map((stat, i) => (
-              <div 
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-[15px] text-[hsl(220,12%,50%)] leading-relaxed max-w-sm"
+          >
+            Real-time analytics, user management, and complete platform control from one secure dashboard.
+          </motion.p>
+
+          {/* Stats */}
+          <div className="mt-12 grid grid-cols-3 gap-4">
+            {stats.map((stat, i) => (
+              <motion.div
                 key={stat.label}
-                className="bg-[hsl(220,20%,10%,0.5)] backdrop-blur-sm border border-[hsl(var(--login-border),0.5)] rounded-xl p-3.5 login-float-in"
-                style={{ animationDelay: `${0.5 + i * 0.1}s` }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }}
+                className="glass-card rounded-2xl p-4 border-glow"
               >
-                <p className="text-[18px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {stat.value}
-                </p>
-                <p className="text-[10px] text-[hsl(var(--login-muted))] mt-0.5 font-medium uppercase tracking-wider">
+                <stat.icon className="w-4 h-4 mb-2" style={{ color: 'hsl(160, 84%, 45%)' }} />
+                <p className="text-xl font-bold text-white font-display">{stat.value}</p>
+                <p className="text-[10px] text-[hsl(220,12%,40%)] mt-1 font-semibold uppercase tracking-wider">
                   {stat.label}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="w-full lg:w-[45%] flex items-center justify-center px-6 relative">
-        {/* Subtle border on left */}
-        <div className="hidden lg:block absolute left-0 top-[10%] bottom-[10%] w-px bg-gradient-to-b from-transparent via-[hsl(var(--login-border))] to-transparent" />
+      <div className="w-full lg:w-[45%] flex items-center justify-center px-6 relative z-10">
+        {/* Left border gradient */}
+        <div className="hidden lg:block absolute left-0 top-[10%] bottom-[10%] w-px" style={{
+          background: 'linear-gradient(to bottom, transparent, hsl(225, 15%, 18%), transparent)',
+        }} />
 
-        <div className="w-full max-w-[380px] login-float-in" style={{ animationDelay: '0.3s' }}>
-          {/* Mobile logo */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-[400px]"
+        >
+          {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-10">
-            <div className="inline-flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-[hsl(var(--login-accent))] flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-3"
+            >
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center pulse-glow"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 30%))',
+                }}
+              >
                 <Shield className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                ALADDINN
-              </span>
-            </div>
+              <span className="text-xl font-bold text-white font-display">ALADDINN</span>
+            </motion.div>
           </div>
 
           <div className="mb-8">
-            <h2 className="text-[28px] font-bold text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h2 className="text-3xl font-bold text-white tracking-tight font-display">
               Welcome back
             </h2>
-            <p className="text-[14px] text-[hsl(var(--login-muted))] mt-1.5">
-              Sign in to your admin account to continue
+            <p className="text-sm text-[hsl(220,12%,40%)] mt-2">
+              Sign in to access your admin dashboard
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-[12px] font-semibold text-[hsl(220,12%,55%)] mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {/* Email Field */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <label className="block text-[11px] font-bold text-[hsl(220,12%,50%)] mb-2.5 uppercase tracking-wider font-display">
                 Email Address
               </label>
               <div className={`relative rounded-xl transition-all duration-300 ${
-                focused === 'email' 
-                  ? 'shadow-[0_0_0_2px_hsl(var(--login-accent)/0.3),0_0_20px_hsl(var(--login-accent)/0.08)]' 
+                focused === 'email'
+                  ? 'shadow-[0_0_0_2px_hsl(160,84%,39%/0.25),0_0_25px_hsl(160,84%,39%/0.08)]'
                   : ''
               }`}>
                 <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                  focused === 'email' ? 'text-[hsl(var(--login-accent))]' : 'text-[hsl(220,12%,28%)]'
+                  focused === 'email' ? 'text-[hsl(160,84%,45%)]' : 'text-[hsl(220,12%,25%)]'
                 }`}>
-                  <Mail className="w-[16px] h-[16px]" />
+                  <Mail className="w-4 h-4" />
                 </div>
                 <input
                   type="email"
@@ -170,28 +244,31 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setFocused('email')}
                   onBlur={() => setFocused(null)}
-                  placeholder="you@company.com"
+                  placeholder="admin@aladdinn.com"
                   required
-                  className="w-full h-[50px] rounded-xl bg-[hsl(var(--login-input-bg))] border border-[hsl(var(--login-border))] pl-11 pr-4 text-[13px] text-white placeholder:text-[hsl(220,12%,25%)] focus:outline-none transition-colors duration-300 focus:border-[hsl(var(--login-accent)/0.4)]"
-                  style={{ fontFamily: "'Outfit', sans-serif" }}
+                  className="w-full h-[52px] rounded-xl bg-[hsl(230,22%,7%)] border border-[hsl(225,15%,16%)] pl-12 pr-4 text-[13px] text-white placeholder:text-[hsl(220,12%,22%)] focus:outline-none transition-all duration-300 focus:border-[hsl(160,84%,39%/0.4)]"
                 />
               </div>
-            </div>
+            </motion.div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-[12px] font-semibold text-[hsl(220,12%,55%)] mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {/* Password Field */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <label className="block text-[11px] font-bold text-[hsl(220,12%,50%)] mb-2.5 uppercase tracking-wider font-display">
                 Password
               </label>
               <div className={`relative rounded-xl transition-all duration-300 ${
-                focused === 'password' 
-                  ? 'shadow-[0_0_0_2px_hsl(var(--login-accent)/0.3),0_0_20px_hsl(var(--login-accent)/0.08)]' 
+                focused === 'password'
+                  ? 'shadow-[0_0_0_2px_hsl(160,84%,39%/0.25),0_0_25px_hsl(160,84%,39%/0.08)]'
                   : ''
               }`}>
                 <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                  focused === 'password' ? 'text-[hsl(var(--login-accent))]' : 'text-[hsl(220,12%,28%)]'
+                  focused === 'password' ? 'text-[hsl(160,84%,45%)]' : 'text-[hsl(220,12%,25%)]'
                 }`}>
-                  <Lock className="w-[16px] h-[16px]" />
+                  <Lock className="w-4 h-4" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -201,54 +278,64 @@ export default function LoginPage() {
                   onBlur={() => setFocused(null)}
                   placeholder="Enter your password"
                   required
-                  className="w-full h-[50px] rounded-xl bg-[hsl(var(--login-input-bg))] border border-[hsl(var(--login-border))] pl-11 pr-12 text-[13px] text-white placeholder:text-[hsl(220,12%,25%)] focus:outline-none transition-colors duration-300 focus:border-[hsl(var(--login-accent)/0.4)]"
-                  style={{ fontFamily: "'Outfit', sans-serif" }}
+                  className="w-full h-[52px] rounded-xl bg-[hsl(230,22%,7%)] border border-[hsl(225,15%,16%)] pl-12 pr-12 text-[13px] text-white placeholder:text-[hsl(220,12%,22%)] focus:outline-none transition-all duration-300 focus:border-[hsl(160,84%,39%/0.4)]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[hsl(220,12%,28%)] hover:text-[hsl(220,12%,55%)] transition-colors duration-200"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[hsl(220,12%,25%)] hover:text-[hsl(220,12%,50%)] transition-colors duration-200"
                 >
-                  {showPassword ? <EyeOff className="w-[15px] h-[15px]" /> : <Eye className="w-[15px] h-[15px]" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-[50px] mt-2 rounded-xl font-semibold text-[14px] text-white flex items-center justify-center gap-2.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] group login-shimmer-btn"
-              style={{ 
-                background: 'linear-gradient(135deg, hsl(var(--login-accent)), hsl(160,70%,35%), hsl(var(--login-accent)))',
-                boxShadow: '0 4px 24px hsl(var(--login-accent-glow)/0.25), 0 0 0 1px hsl(var(--login-accent)/0.2)',
-                fontFamily: "'Space Grotesk', sans-serif",
-              }}
+            {/* Submit Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
             >
-              {loading ? (
-                <div className="w-5 h-5 border-[2.5px] border-white/20 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
-                </>
-              )}
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-[52px] mt-3 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2.5 transition-all duration-300 disabled:opacity-50 active:scale-[0.97] group login-shimmer-btn font-display"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 32%), hsl(160, 84%, 39%))',
+                  boxShadow: '0 4px 30px hsl(160, 84%, 39% / 0.25), 0 0 0 1px hsl(160, 84%, 39% / 0.15)',
+                }}
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-[2.5px] border-white/20 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  </>
+                )}
+              </button>
+            </motion.div>
           </form>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-[hsl(var(--login-border),0.5)]">
-            <div className="flex items-center justify-center gap-2">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-10 pt-6"
+            style={{ borderTop: '1px solid hsl(225, 15%, 12%)' }}
+          >
+            <div className="flex items-center justify-center gap-2.5">
               <div className="relative">
-                <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />
-                <div className="absolute inset-0 w-2 h-2 rounded-full bg-[hsl(var(--success))] animate-ping opacity-50" />
+                <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(142, 71%, 45%)' }} />
+                <div className="absolute inset-0 w-2 h-2 rounded-full animate-ping opacity-40" style={{ background: 'hsl(142, 71%, 45%)' }} />
               </div>
-              <span className="text-[11px] text-[hsl(var(--login-muted))] font-medium">
+              <span className="text-[11px] text-[hsl(220,12%,35%)] font-medium">
                 System Operational · All Services Running
               </span>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
