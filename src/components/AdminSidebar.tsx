@@ -297,7 +297,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         {/* Logout */}
         <button
           onClick={() => signOut()}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-red-400 hover:bg-red-500/10 transition-all duration-200"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-all duration-200"
         >
           <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
           {!collapsed && <span className="font-display">Logout</span>}
