@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard, Gamepad2, Dice3, Dice5, Wallet,
   HeadphonesIcon, Settings2, Users, ChevronDown, ChevronLeft,
