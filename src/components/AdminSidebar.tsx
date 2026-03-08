@@ -102,6 +102,7 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
+  const { signOut } = useAuth();
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     const active = menuGroups.find((g) =>
