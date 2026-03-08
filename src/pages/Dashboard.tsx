@@ -95,53 +95,118 @@ export default function Dashboard() {
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
-  const cards = [
-    { title: "Today User Join", value: todayUsers, icon: UserPlus, bg: "#3362ff" },
-    { title: "Today's Recharge", value: fmt(depositStats?.todayRecharge || 0), icon: IndianRupee, bg: "#22c55e" },
-    { title: "Today's Withdrawal", value: fmt(depositStats?.todayWithdraw || 0), icon: ArrowDownToLine, bg: "#f97316" },
-    { title: "User Balance", value: fmt(userBalance), icon: Wallet, bg: "#3362ff" },
-    { title: "Total Users", value: totalUsers, icon: Users, bg: "#3362ff" },
-    { title: "Pending Recharge", value: fmt(depositStats?.pendingRecharge || 0), icon: Clock, bg: "#3362ff" },
-    { title: "Success Recharge", value: fmt(depositStats?.successRecharge || 0), icon: CheckCircle, bg: "#3362ff" },
-    { title: "Total Withdrawal", value: fmt(depositStats?.totalWithdrawal || 0), icon: ArrowUpFromLine, bg: "#3362ff" },
-    { title: "Withdrawal Requests", value: fmt(depositStats?.withdrawalRequests || 0), icon: AlertTriangle, bg: "#ef4444" },
-    { title: "Today's Total Bet", value: fmt(betStats?.totalBet || 0), icon: TrendingUp, bg: "#3362ff" },
-    { title: "Today's Total Win", value: fmt(betStats?.totalWin || 0), icon: Trophy, bg: "#3362ff" },
-    { title: "Today's Profit", value: fmt(betStats?.profit || 0), icon: Percent, bg: "#22c55e" },
+  type CardColor = "emerald" | "blue" | "orange" | "red";
+
+  const cardStyles: Record<CardColor, { bg: string; glow: string; iconBg: string }> = {
+    emerald: {
+      bg: 'linear-gradient(135deg, hsl(160, 60%, 12%) 0%, hsl(160, 40%, 8%) 100%)',
+      glow: '0 0 30px hsl(160, 84%, 39% / 0.1)',
+      iconBg: 'hsl(160, 84%, 39% / 0.15)',
+    },
+    blue: {
+      bg: 'linear-gradient(135deg, hsl(225, 50%, 14%) 0%, hsl(225, 40%, 9%) 100%)',
+      glow: '0 0 30px hsl(225, 73%, 57% / 0.1)',
+      iconBg: 'hsl(225, 73%, 57% / 0.15)',
+    },
+    orange: {
+      bg: 'linear-gradient(135deg, hsl(30, 50%, 12%) 0%, hsl(30, 40%, 8%) 100%)',
+      glow: '0 0 30px hsl(38, 92%, 50% / 0.1)',
+      iconBg: 'hsl(38, 92%, 50% / 0.15)',
+    },
+    red: {
+      bg: 'linear-gradient(135deg, hsl(0, 45%, 13%) 0%, hsl(0, 35%, 8%) 100%)',
+      glow: '0 0 30px hsl(0, 72%, 51% / 0.1)',
+      iconBg: 'hsl(0, 72%, 51% / 0.15)',
+    },
+  };
+
+  const cards: { title: string; value: string | number; icon: React.ElementType; color: CardColor }[] = [
+    { title: "Today User Join", value: todayUsers, icon: UserPlus, color: "emerald" },
+    { title: "Today's Recharge", value: fmt(depositStats?.todayRecharge || 0), icon: IndianRupee, color: "emerald" },
+    { title: "Today's Withdrawal", value: fmt(depositStats?.todayWithdraw || 0), icon: ArrowDownToLine, color: "orange" },
+    { title: "User Balance", value: fmt(userBalance), icon: Wallet, color: "blue" },
+    { title: "Total Users", value: totalUsers, icon: Users, color: "blue" },
+    { title: "Pending Recharge", value: fmt(depositStats?.pendingRecharge || 0), icon: Clock, color: "orange" },
+    { title: "Success Recharge", value: fmt(depositStats?.successRecharge || 0), icon: CheckCircle, color: "emerald" },
+    { title: "Total Withdrawal", value: fmt(depositStats?.totalWithdrawal || 0), icon: ArrowUpFromLine, color: "blue" },
+    { title: "Withdrawal Requests", value: fmt(depositStats?.withdrawalRequests || 0), icon: AlertTriangle, color: "red" },
+    { title: "Today's Total Bet", value: fmt(betStats?.totalBet || 0), icon: TrendingUp, color: "blue" },
+    { title: "Today's Total Win", value: fmt(betStats?.totalWin || 0), icon: Trophy, color: "emerald" },
+    { title: "Today's Profit", value: fmt(betStats?.profit || 0), icon: Percent, color: "emerald" },
   ];
 
   return (
     <div>
-      {/* Stats Grid - matching original blue cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mb-5">
-        {cards.map((card) => (
-          <div
-            key={card.title}
-            className="rounded-lg p-4 text-white relative overflow-hidden"
-            style={{ backgroundColor: card.bg }}
-          >
-            <div className="relative z-10">
-              <p className="text-[11px] font-medium opacity-85 mb-1 uppercase tracking-wide">{card.title}</p>
-              <p className="text-xl font-bold">{card.value}</p>
+      {/* Page Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mt-1">Real-time platform overview and analytics</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mb-6">
+        {cards.map((card) => {
+          const style = cardStyles[card.color];
+          return (
+            <div
+              key={card.title}
+              className="rounded-xl p-4 relative overflow-hidden border border-[hsl(225,15%,14%)] transition-all duration-300 hover:scale-[1.02] hover:border-[hsl(225,15%,20%)]"
+              style={{ background: style.bg, boxShadow: style.glow }}
+            >
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] font-semibold text-[hsl(220,12%,50%)] uppercase tracking-wider font-display">
+                    {card.title}
+                  </p>
+                  <div 
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ background: style.iconBg }}
+                  >
+                    <card.icon className="w-4 h-4 text-white/70" />
+                  </div>
+                </div>
+                <p className="text-xl font-bold text-white font-display tracking-tight">{card.value}</p>
+              </div>
             </div>
-            <card.icon className="absolute right-3 bottom-3 w-8 h-8 opacity-15" />
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Game Settings */}
-      <div className="bg-card rounded-lg border p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Settings className="w-4 h-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold text-foreground">Game Settings</h3>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-3 mb-4">
+      <div 
+        className="rounded-xl border border-[hsl(225,15%,14%)] p-6"
+        style={{
+          background: 'linear-gradient(135deg, hsl(228, 25%, 8%) 0%, hsl(230, 22%, 6%) 100%)',
+        }}
+      >
+        <div className="flex items-center gap-3 mb-5">
+          <div 
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--login-accent) / 0.15), hsl(var(--login-accent) / 0.05))',
+              boxShadow: '0 0 0 1px hsl(var(--login-accent) / 0.2)',
+            }}
+          >
+            <Settings className="w-4 h-4 text-[hsl(var(--login-accent))]" />
+          </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Game Mode</label>
+            <h3 className="text-sm font-bold text-white font-display">Game Settings</h3>
+            <p className="text-[11px] text-[hsl(220,12%,40%)]">Configure game modes and processing</p>
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4 mb-5">
+          <div>
+            <label className="text-[11px] font-semibold text-[hsl(220,12%,45%)] mb-2 block font-display uppercase tracking-wider">
+              Game Mode
+            </label>
             <select
               value={currentMode}
               onChange={(e) => setGameMode(e.target.value)}
-              className="w-full h-9 rounded-md bg-muted text-sm px-3 border-0 outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-11 rounded-xl text-sm px-4 border outline-none transition-all duration-200 font-sans text-white"
+              style={{
+                background: 'hsl(230, 22%, 7%)',
+                borderColor: 'hsl(225, 15%, 16%)',
+              }}
             >
               <option value="wingo">WinGo</option>
               <option value="k3">K3</option>
@@ -149,11 +214,17 @@ export default function Dashboard() {
             </select>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Process Type</label>
+            <label className="text-[11px] font-semibold text-[hsl(220,12%,45%)] mb-2 block font-display uppercase tracking-wider">
+              Process Type
+            </label>
             <select
               value={currentProcess}
               onChange={(e) => setProcessType(e.target.value)}
-              className="w-full h-9 rounded-md bg-muted text-sm px-3 border-0 outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-11 rounded-xl text-sm px-4 border outline-none transition-all duration-200 font-sans text-white"
+              style={{
+                background: 'hsl(230, 22%, 7%)',
+                borderColor: 'hsl(225, 15%, 16%)',
+              }}
             >
               <option value="highest_bet_wins">Higher Bet Wins</option>
               <option value="random">Random</option>
@@ -164,9 +235,13 @@ export default function Dashboard() {
         <button
           onClick={() => settingsMutation.mutate()}
           disabled={settingsMutation.isPending}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all duration-300 disabled:opacity-50 active:scale-[0.97] font-display login-shimmer-btn"
+          style={{
+            background: 'linear-gradient(135deg, hsl(var(--login-accent)), hsl(160,70%,35%), hsl(var(--login-accent)))',
+            boxShadow: '0 4px 20px hsl(var(--login-accent-glow) / 0.2), 0 0 0 1px hsl(var(--login-accent) / 0.2)',
+          }}
         >
-          <Save className="w-3.5 h-3.5" />
+          <Save className="w-4 h-4" />
           {settingsMutation.isPending ? "Saving..." : "Save Settings"}
         </button>
       </div>
