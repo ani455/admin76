@@ -30,7 +30,7 @@ serve(async (req) => {
 
   try {
     const { action, params } = await req.json();
-    const db = getPool();
+    const db = await getPool();
     let result: any;
 
     switch (action) {
