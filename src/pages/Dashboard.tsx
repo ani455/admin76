@@ -8,6 +8,17 @@ import {
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.04 } },
+};
+
+const cardAnim = {
+  hidden: { opacity: 0, y: 15, scale: 0.97 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+};
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -69,7 +80,6 @@ export default function Dashboard() {
     },
   });
 
-  // Game Settings
   const { data: settings } = useQuery({
     queryKey: ["game-settings"],
     queryFn: async () => {
@@ -89,124 +99,149 @@ export default function Dashboard() {
       const { error } = await supabase.from("game_settings").update({ game_mode: currentMode, process_type: currentProcess }).eq("id", 1);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Settings saved"); queryClient.invalidateQueries({ queryKey: ["game-settings"] }); },
-    onError: () => toast.error("Failed to save"),
+    onSuccess: () => { toast.success("Settings saved successfully!"); queryClient.invalidateQueries({ queryKey: ["game-settings"] }); },
+    onError: () => toast.error("Failed to save settings"),
   });
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
-  type CardColor = "emerald" | "blue" | "orange" | "red";
+  type CardColor = "green" | "blue" | "orange" | "red";
 
-  const cardStyles: Record<CardColor, { bg: string; glow: string; iconBg: string }> = {
-    emerald: {
-      bg: 'linear-gradient(135deg, hsl(160, 60%, 12%) 0%, hsl(160, 40%, 8%) 100%)',
-      glow: '0 0 30px hsl(160, 84%, 39% / 0.1)',
-      iconBg: 'hsl(160, 84%, 39% / 0.15)',
+  const colorMap: Record<CardColor, { gradient: string; glow: string; iconColor: string; iconBg: string }> = {
+    green: {
+      gradient: 'linear-gradient(145deg, hsl(160, 40%, 12%) 0%, hsl(160, 30%, 7%) 100%)',
+      glow: 'hsl(160, 84%, 39% / 0.08)',
+      iconColor: 'hsl(160, 84%, 45%)',
+      iconBg: 'hsl(160, 84%, 39% / 0.12)',
     },
     blue: {
-      bg: 'linear-gradient(135deg, hsl(225, 50%, 14%) 0%, hsl(225, 40%, 9%) 100%)',
-      glow: '0 0 30px hsl(225, 73%, 57% / 0.1)',
-      iconBg: 'hsl(225, 73%, 57% / 0.15)',
+      gradient: 'linear-gradient(145deg, hsl(210, 40%, 13%) 0%, hsl(210, 30%, 7%) 100%)',
+      glow: 'hsl(210, 100%, 55% / 0.08)',
+      iconColor: 'hsl(210, 100%, 60%)',
+      iconBg: 'hsl(210, 100%, 55% / 0.12)',
     },
     orange: {
-      bg: 'linear-gradient(135deg, hsl(30, 50%, 12%) 0%, hsl(30, 40%, 8%) 100%)',
-      glow: '0 0 30px hsl(38, 92%, 50% / 0.1)',
-      iconBg: 'hsl(38, 92%, 50% / 0.15)',
+      gradient: 'linear-gradient(145deg, hsl(30, 40%, 12%) 0%, hsl(30, 30%, 7%) 100%)',
+      glow: 'hsl(38, 92%, 50% / 0.08)',
+      iconColor: 'hsl(38, 92%, 55%)',
+      iconBg: 'hsl(38, 92%, 50% / 0.12)',
     },
     red: {
-      bg: 'linear-gradient(135deg, hsl(0, 45%, 13%) 0%, hsl(0, 35%, 8%) 100%)',
-      glow: '0 0 30px hsl(0, 72%, 51% / 0.1)',
-      iconBg: 'hsl(0, 72%, 51% / 0.15)',
+      gradient: 'linear-gradient(145deg, hsl(0, 35%, 13%) 0%, hsl(0, 25%, 7%) 100%)',
+      glow: 'hsl(0, 72%, 51% / 0.08)',
+      iconColor: 'hsl(0, 72%, 55%)',
+      iconBg: 'hsl(0, 72%, 51% / 0.12)',
     },
   };
 
   const cards: { title: string; value: string | number; icon: React.ElementType; color: CardColor }[] = [
-    { title: "Today User Join", value: todayUsers, icon: UserPlus, color: "emerald" },
-    { title: "Today's Recharge", value: fmt(depositStats?.todayRecharge || 0), icon: IndianRupee, color: "emerald" },
+    { title: "Today User Join", value: todayUsers, icon: UserPlus, color: "green" },
+    { title: "Today's Recharge", value: fmt(depositStats?.todayRecharge || 0), icon: IndianRupee, color: "green" },
     { title: "Today's Withdrawal", value: fmt(depositStats?.todayWithdraw || 0), icon: ArrowDownToLine, color: "orange" },
     { title: "User Balance", value: fmt(userBalance), icon: Wallet, color: "blue" },
     { title: "Total Users", value: totalUsers, icon: Users, color: "blue" },
     { title: "Pending Recharge", value: fmt(depositStats?.pendingRecharge || 0), icon: Clock, color: "orange" },
-    { title: "Success Recharge", value: fmt(depositStats?.successRecharge || 0), icon: CheckCircle, color: "emerald" },
+    { title: "Success Recharge", value: fmt(depositStats?.successRecharge || 0), icon: CheckCircle, color: "green" },
     { title: "Total Withdrawal", value: fmt(depositStats?.totalWithdrawal || 0), icon: ArrowUpFromLine, color: "blue" },
     { title: "Withdrawal Requests", value: fmt(depositStats?.withdrawalRequests || 0), icon: AlertTriangle, color: "red" },
     { title: "Today's Total Bet", value: fmt(betStats?.totalBet || 0), icon: TrendingUp, color: "blue" },
-    { title: "Today's Total Win", value: fmt(betStats?.totalWin || 0), icon: Trophy, color: "emerald" },
-    { title: "Today's Profit", value: fmt(betStats?.profit || 0), icon: Percent, color: "emerald" },
+    { title: "Today's Total Win", value: fmt(betStats?.totalWin || 0), icon: Trophy, color: "green" },
+    { title: "Today's Profit", value: fmt(betStats?.profit || 0), icon: Percent, color: "green" },
   ];
 
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="mb-8"
+      >
         <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">Real-time platform overview and analytics</p>
-      </div>
+      </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mb-6">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 mb-8"
+      >
         {cards.map((card) => {
-          const style = cardStyles[card.color];
+          const c = colorMap[card.color];
           return (
-            <div
+            <motion.div
               key={card.title}
-              className="rounded-xl p-4 relative overflow-hidden border border-[hsl(225,15%,14%)] transition-all duration-300 hover:scale-[1.02] hover:border-[hsl(225,15%,20%)]"
-              style={{ background: style.bg, boxShadow: style.glow }}
+              variants={cardAnim}
+              whileHover={{ scale: 1.03, y: -2 }}
+              className="rounded-2xl p-4 lg:p-5 relative overflow-hidden cursor-default group"
+              style={{
+                background: c.gradient,
+                border: '1px solid hsl(225, 15%, 14%)',
+                boxShadow: `0 0 30px ${c.glow}`,
+              }}
             >
+              {/* Subtle corner glow */}
+              <div
+                className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{ background: c.iconColor }}
+              />
+
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-semibold text-[hsl(220,12%,50%)] uppercase tracking-wider font-display">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display leading-tight">
                     {card.title}
                   </p>
-                  <div 
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: style.iconBg }}
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: c.iconBg }}
                   >
-                    <card.icon className="w-4 h-4 text-white/70" />
+                    <card.icon className="w-4 h-4" style={{ color: c.iconColor }} />
                   </div>
                 </div>
-                <p className="text-xl font-bold text-white font-display tracking-tight">{card.value}</p>
+                <p className="text-xl lg:text-2xl font-bold text-white font-display tracking-tight">
+                  {card.value}
+                </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Game Settings */}
-      <div 
-        className="rounded-xl border border-[hsl(225,15%,14%)] p-6"
-        style={{
-          background: 'linear-gradient(135deg, hsl(228, 25%, 8%) 0%, hsl(230, 22%, 6%) 100%)',
-        }}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="glass-card-solid rounded-2xl p-6 lg:p-8"
       >
-        <div className="flex items-center gap-3 mb-5">
-          <div 
-            className="w-9 h-9 rounded-xl flex items-center justify-center"
+        <div className="flex items-center gap-3 mb-6">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, hsl(var(--login-accent) / 0.15), hsl(var(--login-accent) / 0.05))',
-              boxShadow: '0 0 0 1px hsl(var(--login-accent) / 0.2)',
+              background: 'hsl(160, 84%, 39% / 0.12)',
+              border: '1px solid hsl(160, 84%, 39% / 0.15)',
             }}
           >
-            <Settings className="w-4 h-4 text-[hsl(var(--login-accent))]" />
+            <Settings className="w-5 h-5" style={{ color: 'hsl(160, 84%, 45%)' }} />
           </div>
           <div>
             <h3 className="text-sm font-bold text-white font-display">Game Settings</h3>
-            <p className="text-[11px] text-[hsl(220,12%,40%)]">Configure game modes and processing</p>
+            <p className="text-[11px] text-muted-foreground">Configure game modes and processing</p>
           </div>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4 mb-5">
+
+        <div className="grid sm:grid-cols-2 gap-5 mb-6">
           <div>
-            <label className="text-[11px] font-semibold text-[hsl(220,12%,45%)] mb-2 block font-display uppercase tracking-wider">
+            <label className="block text-[10px] font-bold text-muted-foreground mb-2.5 uppercase tracking-[0.1em] font-display">
               Game Mode
             </label>
             <select
               value={currentMode}
               onChange={(e) => setGameMode(e.target.value)}
-              className="w-full h-11 rounded-xl text-sm px-4 border outline-none transition-all duration-200 font-sans text-white"
-              style={{
-                background: 'hsl(230, 22%, 7%)',
-                borderColor: 'hsl(225, 15%, 16%)',
-              }}
+              className="select-dark w-full h-12"
             >
               <option value="wingo">WinGo</option>
               <option value="k3">K3</option>
@@ -214,17 +249,13 @@ export default function Dashboard() {
             </select>
           </div>
           <div>
-            <label className="text-[11px] font-semibold text-[hsl(220,12%,45%)] mb-2 block font-display uppercase tracking-wider">
+            <label className="block text-[10px] font-bold text-muted-foreground mb-2.5 uppercase tracking-[0.1em] font-display">
               Process Type
             </label>
             <select
               value={currentProcess}
               onChange={(e) => setProcessType(e.target.value)}
-              className="w-full h-11 rounded-xl text-sm px-4 border outline-none transition-all duration-200 font-sans text-white"
-              style={{
-                background: 'hsl(230, 22%, 7%)',
-                borderColor: 'hsl(225, 15%, 16%)',
-              }}
+              className="select-dark w-full h-12"
             >
               <option value="highest_bet_wins">Higher Bet Wins</option>
               <option value="random">Random</option>
@@ -232,19 +263,22 @@ export default function Dashboard() {
             </select>
           </div>
         </div>
-        <button
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => settingsMutation.mutate()}
           disabled={settingsMutation.isPending}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all duration-300 disabled:opacity-50 active:scale-[0.97] font-display login-shimmer-btn"
+          className="btn-neon inline-flex items-center gap-2.5 px-6 py-3 text-[13px] font-display disabled:opacity-50 login-shimmer-btn"
           style={{
-            background: 'linear-gradient(135deg, hsl(var(--login-accent)), hsl(160,70%,35%), hsl(var(--login-accent)))',
-            boxShadow: '0 4px 20px hsl(var(--login-accent-glow) / 0.2), 0 0 0 1px hsl(var(--login-accent) / 0.2)',
+            background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 32%), hsl(160, 84%, 39%))',
+            backgroundSize: '200% 100%',
           }}
         >
           <Save className="w-4 h-4" />
           {settingsMutation.isPending ? "Saving..." : "Save Settings"}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
     </div>
   );
 }

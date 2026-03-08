@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { Construction } from "lucide-react";
+import { motion } from "framer-motion";
 
 const pageTitles: Record<string, string> = {
   "/finance/usdt-rate": "USDT Rate",
@@ -32,10 +33,25 @@ export default function PlaceholderPage() {
   const title = pageTitles[location.pathname] || "Page";
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh]">
-      <Construction className="w-10 h-10 text-muted-foreground/40 mb-3" />
-      <h2 className="text-base font-bold text-foreground mb-1">{title}</h2>
-      <p className="text-xs text-muted-foreground">This module will be available soon.</p>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col items-center justify-center min-h-[60vh]"
+    >
+      <div className="glass-card-solid rounded-3xl p-12 text-center max-w-sm">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+          style={{
+            background: 'hsl(38, 92%, 50% / 0.1)',
+            border: '1px solid hsl(38, 92%, 50% / 0.15)',
+          }}
+        >
+          <Construction className="w-7 h-7" style={{ color: 'hsl(38, 92%, 55%)' }} />
+        </div>
+        <h2 className="text-lg font-bold text-white mb-2 font-display">{title}</h2>
+        <p className="text-sm text-muted-foreground">This module will be available soon.</p>
+      </div>
+    </motion.div>
   );
 }

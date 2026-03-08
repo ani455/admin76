@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Gamepad2, Dice3, Dice5, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function GameManagerPage() {
   const location = useLocation();
@@ -32,64 +33,91 @@ export default function GameManagerPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4">
-        <GameIcon className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-bold text-foreground">{gameType} Manager — {duration}</h2>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-3 mb-6"
+      >
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
+          background: 'hsl(160, 84%, 39% / 0.12)',
+          border: '1px solid hsl(160, 84%, 39% / 0.15)',
+        }}>
+          <GameIcon className="w-5 h-5" style={{ color: 'hsl(160, 84%, 45%)' }} />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-white font-display">{gameType} Manager</h2>
+          <p className="text-[11px] text-muted-foreground font-medium">{duration} duration periods</p>
+        </div>
+      </motion.div>
 
-      <div className="bg-card rounded-lg border overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-table rounded-2xl overflow-hidden"
+      >
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'hsl(160, 84%, 45%)' }} />
           </div>
         ) : !periods?.length ? (
-          <div className="text-center py-16 text-muted-foreground text-sm">No periods yet</div>
+          <div className="text-center py-20 text-muted-foreground text-sm">No periods yet</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="admin-table">
               <thead>
-                <tr className="border-b bg-muted/30">
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Period</th>
-                  <th className="text-center px-3 py-2 font-semibold text-muted-foreground">Number</th>
-                  <th className="text-center px-3 py-2 font-semibold text-muted-foreground">Color</th>
-                  <th className="text-center px-3 py-2 font-semibold text-muted-foreground">Big/Small</th>
-                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Total Bet</th>
-                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Total Win</th>
-                  <th className="text-center px-3 py-2 font-semibold text-muted-foreground">Users</th>
+                <tr>
+                  <th className="text-left">Period</th>
+                  <th className="text-center">Number</th>
+                  <th className="text-center">Color</th>
+                  <th className="text-center">Big/Small</th>
+                  <th className="text-right">Total Bet</th>
+                  <th className="text-right">Total Win</th>
+                  <th className="text-center">Users</th>
                 </tr>
               </thead>
               <tbody>
-                {periods.map((p) => (
-                  <tr key={p.id} className="border-b last:border-0 table-row-hover">
-                    <td className="px-3 py-2 font-mono font-medium">{p.period_number}</td>
-                    <td className="px-3 py-2 text-center">
+                {periods.map((p, i) => (
+                  <motion.tr
+                    key={p.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.02 }}
+                  >
+                    <td className="font-mono font-semibold text-white">{p.period_number}</td>
+                    <td className="text-center">
                       <span
-                        className="inline-flex w-6 h-6 rounded-full items-center justify-center text-[11px] font-bold text-white"
-                        style={{ backgroundColor: p.result_color === "Red" ? "#ef4444" : "#22c55e" }}
+                        className="inline-flex w-7 h-7 rounded-lg items-center justify-center text-[11px] font-bold text-white"
+                        style={{
+                          background: p.result_color === "Red"
+                            ? 'linear-gradient(135deg, hsl(0, 72%, 50%), hsl(0, 60%, 40%))'
+                            : 'linear-gradient(135deg, hsl(142, 71%, 45%), hsl(142, 60%, 35%))',
+                          boxShadow: p.result_color === "Red"
+                            ? '0 2px 10px hsl(0, 72%, 50% / 0.3)'
+                            : '0 2px 10px hsl(142, 71%, 45% / 0.3)',
+                        }}
                       >
                         {p.result_number ?? "—"}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="text-center">
                       {p.result_color && (
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          p.result_color === "Red" ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"
-                        }`}>
+                        <span className={p.result_color === "Red" ? "badge-danger" : "badge-success"}>
                           {p.result_color}
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-center text-muted-foreground">{p.big_small || "—"}</td>
-                    <td className="px-3 py-2 text-right font-semibold">₹{Number(p.total_bet).toLocaleString("en-IN")}</td>
-                    <td className="px-3 py-2 text-right text-warning font-medium">₹{Number(p.total_win).toLocaleString("en-IN")}</td>
-                    <td className="px-3 py-2 text-center text-muted-foreground">{p.users_count}</td>
-                  </tr>
+                    <td className="text-center text-muted-foreground">{p.big_small || "—"}</td>
+                    <td className="text-right font-semibold text-white">₹{Number(p.total_bet).toLocaleString("en-IN")}</td>
+                    <td className="text-right font-medium" style={{ color: 'hsl(38, 92%, 55%)' }}>₹{Number(p.total_win).toLocaleString("en-IN")}</td>
+                    <td className="text-center text-muted-foreground">{p.users_count}</td>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

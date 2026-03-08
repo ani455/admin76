@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Copy, Loader2 } from "lucide-react";
+import { Search, Copy, Loader2, ArrowUpFromLine } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function WithdrawManagePage() {
   const queryClient = useQueryClient();
@@ -43,7 +44,7 @@ export default function WithdrawManagePage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Updated!");
+      toast.success("Withdrawal updated!");
       queryClient.invalidateQueries({ queryKey: ["withdrawals-pending"] });
       queryClient.invalidateQueries({ queryKey: ["withdrawals-completed"] });
     },
@@ -56,79 +57,109 @@ export default function WithdrawManagePage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h2 className="text-lg font-bold text-foreground">Withdraw Requests</h2>
-        <div className="flex items-center gap-2 bg-card border rounded-md px-3 py-1.5 w-full sm:w-56">
-          <Search className="w-3.5 h-3.5 text-muted-foreground" />
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
+            background: 'hsl(38, 92%, 50% / 0.12)',
+            border: '1px solid hsl(38, 92%, 50% / 0.15)',
+          }}>
+            <ArrowUpFromLine className="w-5 h-5" style={{ color: 'hsl(38, 92%, 55%)' }} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white font-display">Withdraw Requests</h2>
+            <p className="text-[11px] text-muted-foreground">Manage pending & completed withdrawals</p>
+          </div>
+        </div>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search account / mobile..."
-            className="bg-transparent text-xs outline-none flex-1 placeholder:text-muted-foreground"
+            className="search-input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Pending */}
-      <div className="bg-card rounded-lg border overflow-hidden mb-5">
-        <div className="px-3 py-2 border-b bg-muted/30">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Pending Withdrawals</h3>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-table rounded-2xl overflow-hidden mb-6"
+      >
+        <div className="px-5 py-3.5 flex items-center gap-2" style={{
+          borderBottom: '1px solid hsl(225, 15%, 12%)',
+          background: 'hsl(228, 22%, 8%)',
+        }}>
+          <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(38, 92%, 50%)' }} />
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">
+            Pending Withdrawals
+          </h3>
         </div>
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'hsl(160, 84%, 45%)' }} />
           </div>
         ) : !pendingWithdrawals?.length ? (
-          <div className="text-center py-10 text-muted-foreground text-xs">No pending withdrawals</div>
+          <div className="text-center py-16 text-muted-foreground text-sm">No pending withdrawals</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="admin-table">
               <thead>
-                <tr className="border-b bg-muted/30">
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">#</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Mobile</th>
-                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Amount</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Bank</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Account No</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">IFSC</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Date</th>
-                  <th className="text-center px-3 py-2 font-semibold text-muted-foreground">Action</th>
+                <tr>
+                  <th className="text-left">#</th>
+                  <th className="text-left">Mobile</th>
+                  <th className="text-right">Amount</th>
+                  <th className="text-left">Bank</th>
+                  <th className="text-left">Account No</th>
+                  <th className="text-left">IFSC</th>
+                  <th className="text-left">Date</th>
+                  <th className="text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {pendingWithdrawals.map((w: any, idx: number) => (
-                  <tr key={w.id} className="border-b last:border-0 table-row-hover">
-                    <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
-                    <td className="px-3 py-2">{w.users?.mobile || "—"}</td>
-                    <td className="px-3 py-2 text-right font-semibold">₹{Number(w.amount).toLocaleString("en-IN")}</td>
-                    <td className="px-3 py-2">{w.bank_name || "—"}</td>
-                    <td className="px-3 py-2 font-mono">
-                      <span className="inline-flex items-center gap-1">
+                  <tr key={w.id}>
+                    <td className="text-muted-foreground">{idx + 1}</td>
+                    <td className="text-white font-semibold">{w.users?.mobile || "—"}</td>
+                    <td className="text-right font-bold text-white">₹{Number(w.amount).toLocaleString("en-IN")}</td>
+                    <td>{w.bank_name || "—"}</td>
+                    <td className="font-mono">
+                      <span className="inline-flex items-center gap-1.5">
                         {w.account_no || "—"}
                         {w.account_no && (
-                          <button onClick={() => copyText(w.account_no)} className="hover:text-primary">
+                          <button onClick={() => copyText(w.account_no)} className="text-muted-foreground hover:text-white transition-colors">
                             <Copy className="w-3 h-3" />
                           </button>
                         )}
                       </span>
                     </td>
-                    <td className="px-3 py-2 font-mono text-muted-foreground">{w.ifsc || "—"}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{new Date(w.created_at).toLocaleString("en-IN")}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
+                    <td className="font-mono text-muted-foreground">{w.ifsc || "—"}</td>
+                    <td className="text-muted-foreground">{new Date(w.created_at).toLocaleString("en-IN")}</td>
+                    <td>
+                      <div className="flex items-center justify-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => statusMutation.mutate({ id: w.id, status: "approved" })}
-                          className="px-2.5 py-1 rounded text-[11px] font-semibold bg-primary text-white hover:opacity-90"
+                          className="btn-neon px-3 py-1.5 text-[11px]"
                         >
                           Approve
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => statusMutation.mutate({ id: w.id, status: "rejected" })}
-                          className="px-2.5 py-1 rounded text-[11px] font-semibold bg-destructive text-white hover:opacity-90"
+                          className="btn-danger px-3 py-1.5 text-[11px]"
                         >
                           Reject
-                        </button>
+                        </motion.button>
                       </div>
                     </td>
                   </tr>
@@ -137,54 +168,63 @@ export default function WithdrawManagePage() {
             </table>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Completed */}
-      <div className="bg-card rounded-lg border overflow-hidden">
-        <div className="px-3 py-2 border-b bg-muted/30">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Completed Withdrawals</h3>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="glass-table rounded-2xl overflow-hidden"
+      >
+        <div className="px-5 py-3.5 flex items-center gap-2" style={{
+          borderBottom: '1px solid hsl(225, 15%, 12%)',
+          background: 'hsl(228, 22%, 8%)',
+        }}>
+          <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(142, 71%, 45%)' }} />
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">
+            Completed Withdrawals
+          </h3>
         </div>
         {!completedWithdrawals?.length ? (
-          <div className="text-center py-10 text-muted-foreground text-xs">No completed withdrawals</div>
+          <div className="text-center py-16 text-muted-foreground text-sm">No completed withdrawals</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="admin-table">
               <thead>
-                <tr className="border-b bg-muted/30">
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">#</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Mobile</th>
-                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Amount</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Bank</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Account No</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">IFSC</th>
-                  <th className="text-center px-3 py-2 font-semibold text-muted-foreground">Status</th>
-                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Date</th>
+                <tr>
+                  <th className="text-left">#</th>
+                  <th className="text-left">Mobile</th>
+                  <th className="text-right">Amount</th>
+                  <th className="text-left">Bank</th>
+                  <th className="text-left">Account No</th>
+                  <th className="text-left">IFSC</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-left">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {completedWithdrawals.map((w: any, idx: number) => (
-                  <tr key={w.id} className="border-b last:border-0 table-row-hover">
-                    <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
-                    <td className="px-3 py-2">{w.users?.mobile || "—"}</td>
-                    <td className="px-3 py-2 text-right font-semibold">₹{Number(w.amount).toLocaleString("en-IN")}</td>
-                    <td className="px-3 py-2">{w.bank_name || "—"}</td>
-                    <td className="px-3 py-2 font-mono">{w.account_no || "—"}</td>
-                    <td className="px-3 py-2 font-mono text-muted-foreground">{w.ifsc || "—"}</td>
-                    <td className="px-3 py-2 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
-                        w.status === "approved" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                      }`}>
+                  <tr key={w.id}>
+                    <td className="text-muted-foreground">{idx + 1}</td>
+                    <td className="text-white font-semibold">{w.users?.mobile || "—"}</td>
+                    <td className="text-right font-bold text-white">₹{Number(w.amount).toLocaleString("en-IN")}</td>
+                    <td>{w.bank_name || "—"}</td>
+                    <td className="font-mono">{w.account_no || "—"}</td>
+                    <td className="font-mono text-muted-foreground">{w.ifsc || "—"}</td>
+                    <td className="text-center">
+                      <span className={w.status === "approved" ? "badge-success" : "badge-danger"}>
                         {w.status}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground">{new Date(w.created_at).toLocaleString("en-IN")}</td>
+                    <td className="text-muted-foreground">{new Date(w.created_at).toLocaleString("en-IN")}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
