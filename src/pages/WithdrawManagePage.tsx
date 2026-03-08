@@ -14,7 +14,7 @@ export default function WithdrawManagePage() {
     queryFn: async () => {
       let query = supabase
         .from("withdrawals")
-        .select("*, users!inner(name, mobile)")
+        .select("*, users!inner(name, mobile, balance, total_withdraw)")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
       if (search) query = query.or(`account_no.ilike.%${search}%,users.mobile.ilike.%${search}%`);
@@ -38,16 +38,40 @@ export default function WithdrawManagePage() {
     },
   });
 
-  const statusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("withdrawals").update({ status }).eq("id", id);
+  const approveMutation = useMutation({
+    mutationFn: async ({ id, userId, amount, currentBalance, currentWithdraw }: { id: string; userId: string; amount: number; currentBalance: number; currentWithdraw: number }) => {
+      // Deduct from balance, add to total_withdraw
+      const newBalance = currentBalance - amount;
+      if (newBalance < 0) throw new Error("Insufficient user balance!");
+      const newWithdraw = currentWithdraw + amount;
+      const { error: balError } = await supabase
+        .from("users")
+        .update({ balance: newBalance, total_withdraw: newWithdraw })
+        .eq("id", userId);
+      if (balError) throw balError;
+
+      const { error } = await supabase.from("withdrawals").update({ status: "approved" }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Withdrawal updated!");
+      toast.success("Withdrawal approved & balance deducted!");
       queryClient.invalidateQueries({ queryKey: ["withdrawals-pending"] });
       queryClient.invalidateQueries({ queryKey: ["withdrawals-completed"] });
     },
+    onError: (e: any) => toast.error("Error: " + e.message),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const { error } = await supabase.from("withdrawals").update({ status: "rejected" }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Withdrawal rejected!");
+      queryClient.invalidateQueries({ queryKey: ["withdrawals-pending"] });
+      queryClient.invalidateQueries({ queryKey: ["withdrawals-completed"] });
+    },
+    onError: (e: any) => toast.error("Error: " + e.message),
   });
 
   const copyText = (text: string) => {
@@ -70,7 +94,7 @@ export default function WithdrawManagePage() {
             <ArrowUpFromLine className="w-5 h-5" style={{ color: 'hsl(38, 92%, 55%)' }} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white font-display">Withdraw Requests</h2>
+            <h2 className="text-lg font-bold text-foreground font-display">Withdraw Requests</h2>
             <p className="text-[11px] text-muted-foreground">Manage pending & completed withdrawals</p>
           </div>
         </div>
@@ -94,8 +118,8 @@ export default function WithdrawManagePage() {
         className="glass-table rounded-2xl overflow-hidden mb-6"
       >
         <div className="px-5 py-3.5 flex items-center gap-2" style={{
-          borderBottom: '1px solid hsl(225, 15%, 12%)',
-          background: 'hsl(228, 22%, 8%)',
+          borderBottom: '1px solid hsl(var(--border))',
+          background: 'hsl(var(--card))',
         }}>
           <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(38, 92%, 50%)' }} />
           <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">
@@ -104,7 +128,7 @@ export default function WithdrawManagePage() {
         </div>
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'hsl(160, 84%, 45%)' }} />
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
           </div>
         ) : !pendingWithdrawals?.length ? (
           <div className="text-center py-16 text-muted-foreground text-sm">No pending withdrawals</div>
@@ -116,6 +140,7 @@ export default function WithdrawManagePage() {
                   <th className="text-left">#</th>
                   <th className="text-left">Mobile</th>
                   <th className="text-right">Amount</th>
+                  <th className="text-right">Balance</th>
                   <th className="text-left">Bank</th>
                   <th className="text-left">Account No</th>
                   <th className="text-left">IFSC</th>
@@ -127,14 +152,15 @@ export default function WithdrawManagePage() {
                 {pendingWithdrawals.map((w: any, idx: number) => (
                   <tr key={w.id}>
                     <td className="text-muted-foreground">{idx + 1}</td>
-                    <td className="text-white font-semibold">{w.users?.mobile || "—"}</td>
-                    <td className="text-right font-bold text-white">₹{Number(w.amount).toLocaleString("en-IN")}</td>
+                    <td className="text-foreground font-semibold">{w.users?.mobile || "—"}</td>
+                    <td className="text-right font-bold text-foreground">₹{Number(w.amount).toLocaleString("en-IN")}</td>
+                    <td className="text-right font-medium" style={{ color: 'hsl(210, 100%, 60%)' }}>₹{Number(w.users?.balance || 0).toLocaleString("en-IN")}</td>
                     <td>{w.bank_name || "—"}</td>
                     <td className="font-mono">
                       <span className="inline-flex items-center gap-1.5">
                         {w.account_no || "—"}
                         {w.account_no && (
-                          <button onClick={() => copyText(w.account_no)} className="text-muted-foreground hover:text-white transition-colors">
+                          <button onClick={() => copyText(w.account_no)} className="text-muted-foreground hover:text-foreground transition-colors">
                             <Copy className="w-3 h-3" />
                           </button>
                         )}
@@ -147,16 +173,24 @@ export default function WithdrawManagePage() {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => statusMutation.mutate({ id: w.id, status: "approved" })}
-                          className="btn-neon px-3 py-1.5 text-[11px]"
+                          onClick={() => approveMutation.mutate({
+                            id: w.id,
+                            userId: w.user_id,
+                            amount: Number(w.amount),
+                            currentBalance: Number(w.users?.balance || 0),
+                            currentWithdraw: Number(w.users?.total_withdraw || 0),
+                          })}
+                          disabled={approveMutation.isPending}
+                          className="btn-neon px-3 py-1.5 text-[11px] disabled:opacity-50"
                         >
                           Approve
                         </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => statusMutation.mutate({ id: w.id, status: "rejected" })}
-                          className="btn-danger px-3 py-1.5 text-[11px]"
+                          onClick={() => rejectMutation.mutate({ id: w.id })}
+                          disabled={rejectMutation.isPending}
+                          className="btn-danger px-3 py-1.5 text-[11px] disabled:opacity-50"
                         >
                           Reject
                         </motion.button>
@@ -178,8 +212,8 @@ export default function WithdrawManagePage() {
         className="glass-table rounded-2xl overflow-hidden"
       >
         <div className="px-5 py-3.5 flex items-center gap-2" style={{
-          borderBottom: '1px solid hsl(225, 15%, 12%)',
-          background: 'hsl(228, 22%, 8%)',
+          borderBottom: '1px solid hsl(var(--border))',
+          background: 'hsl(var(--card))',
         }}>
           <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(142, 71%, 45%)' }} />
           <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">
@@ -207,8 +241,8 @@ export default function WithdrawManagePage() {
                 {completedWithdrawals.map((w: any, idx: number) => (
                   <tr key={w.id}>
                     <td className="text-muted-foreground">{idx + 1}</td>
-                    <td className="text-white font-semibold">{w.users?.mobile || "—"}</td>
-                    <td className="text-right font-bold text-white">₹{Number(w.amount).toLocaleString("en-IN")}</td>
+                    <td className="text-foreground font-semibold">{w.users?.mobile || "—"}</td>
+                    <td className="text-right font-bold text-foreground">₹{Number(w.amount).toLocaleString("en-IN")}</td>
                     <td>{w.bank_name || "—"}</td>
                     <td className="font-mono">{w.account_no || "—"}</td>
                     <td className="font-mono text-muted-foreground">{w.ifsc || "—"}</td>
