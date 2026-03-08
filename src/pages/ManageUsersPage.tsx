@@ -83,16 +83,17 @@ export default function ManageUsersPage() {
                           <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[hsl(225,15%,16%)] transition-all" title="View">
                             <Eye className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
-                          <button onClick={() => banMutation.mutate({ id: user.id, status: user.status })}
+                          <button
+                            onClick={() => banMutation.mutate({ id: user.id, status: user.account_frozen === 1 ? "banned" : "active" })}
                             className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[hsl(0,72%,51%/0.1)] transition-all"
-                            title={user.status === "active" ? "Ban" : "Unban"}>
+                            title={user.account_frozen === 1 ? "Unban" : "Ban"}>
                             <Ban className="w-3.5 h-3.5" style={{ color: 'hsl(0, 72%, 55%)' }} />
                           </button>
                         </div>
                       </td>
                       <td>{user.name || "—"}</td>
                       <td className="text-center">
-                        <span className={user.status === "banned" ? "badge-danger" : "badge-success"}>{user.status === "banned" ? "Banned" : "Active"}</span>
+                        <span className={user.account_frozen === 1 ? "badge-danger" : "badge-success"}>{user.account_frozen === 1 ? "Frozen" : "Active"}</span>
                       </td>
                     </motion.tr>
                   ))}
