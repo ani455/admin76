@@ -52,7 +52,7 @@ export default function ManageUsersPage() {
             <Users className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white font-display">Manage Users</h2>
+            <h2 className="text-lg font-bold text-foreground font-display">Manage Users</h2>
             <p className="text-[11px] text-muted-foreground">{totalCount} total users</p>
           </div>
         </div>
