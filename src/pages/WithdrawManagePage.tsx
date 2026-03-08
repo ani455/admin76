@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { remoteDb } from "@/lib/remoteDb";
 import { Search, Copy, Loader2, ArrowUpFromLine } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -11,48 +11,16 @@ export default function WithdrawManagePage() {
 
   const { data: pendingWithdrawals, isLoading } = useQuery({
     queryKey: ["withdrawals-pending", search],
-    queryFn: async () => {
-      let query = supabase
-        .from("withdrawals")
-        .select("*, users!inner(name, mobile, balance, total_withdraw)")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-      if (search) query = query.or(`account_no.ilike.%${search}%,users.mobile.ilike.%${search}%`);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => remoteDb("get_pending_withdrawals", { search }),
   });
 
   const { data: completedWithdrawals } = useQuery({
     queryKey: ["withdrawals-completed"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("withdrawals")
-        .select("*, users!inner(name, mobile)")
-        .neq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => remoteDb("get_completed_withdrawals"),
   });
 
   const approveMutation = useMutation({
-    mutationFn: async ({ id, userId, amount, currentBalance, currentWithdraw }: { id: string; userId: string; amount: number; currentBalance: number; currentWithdraw: number }) => {
-      // Deduct from balance, add to total_withdraw
-      const newBalance = currentBalance - amount;
-      if (newBalance < 0) throw new Error("Insufficient user balance!");
-      const newWithdraw = currentWithdraw + amount;
-      const { error: balError } = await supabase
-        .from("users")
-        .update({ balance: newBalance, total_withdraw: newWithdraw })
-        .eq("id", userId);
-      if (balError) throw balError;
-
-      const { error } = await supabase.from("withdrawals").update({ status: "approved" }).eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (params: any) => remoteDb("approve_withdrawal", params),
     onSuccess: () => {
       toast.success("Withdrawal approved & balance deducted!");
       queryClient.invalidateQueries({ queryKey: ["withdrawals-pending"] });
@@ -62,10 +30,7 @@ export default function WithdrawManagePage() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async ({ id }: { id: string }) => {
-      const { error } = await supabase.from("withdrawals").update({ status: "rejected" }).eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (params: any) => remoteDb("reject_withdrawal", params),
     onSuccess: () => {
       toast.success("Withdrawal rejected!");
       queryClient.invalidateQueries({ queryKey: ["withdrawals-pending"] });
@@ -74,23 +39,14 @@ export default function WithdrawManagePage() {
     onError: (e: any) => toast.error("Error: " + e.message),
   });
 
-  const copyText = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied!");
-  };
+  const copyText = (text: string) => { navigator.clipboard.writeText(text); toast.success("Copied!"); };
 
   return (
     <div>
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
-      >
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
-            background: 'hsl(38, 92%, 50% / 0.12)',
-            border: '1px solid hsl(38, 92%, 50% / 0.15)',
-          }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'hsl(38, 92%, 50% / 0.12)', border: '1px solid hsl(38, 92%, 50% / 0.15)' }}>
             <ArrowUpFromLine className="w-5 h-5" style={{ color: 'hsl(38, 92%, 55%)' }} />
           </div>
           <div>
@@ -100,36 +56,18 @@ export default function WithdrawManagePage() {
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search account / mobile..."
-            className="search-input"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <input type="text" placeholder="Search account / mobile..." className="search-input" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </motion.div>
 
       {/* Pending */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="glass-table rounded-2xl overflow-hidden mb-6"
-      >
-        <div className="px-5 py-3.5 flex items-center gap-2" style={{
-          borderBottom: '1px solid hsl(var(--border))',
-          background: 'hsl(var(--card))',
-        }}>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-table rounded-2xl overflow-hidden mb-6">
+        <div className="px-5 py-3.5 flex items-center gap-2" style={{ borderBottom: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}>
           <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(38, 92%, 50%)' }} />
-          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">
-            Pending Withdrawals
-          </h3>
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">Pending Withdrawals</h3>
         </div>
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-          </div>
+          <div className="flex items-center justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
         ) : !pendingWithdrawals?.length ? (
           <div className="text-center py-16 text-muted-foreground text-sm">No pending withdrawals</div>
         ) : (
@@ -152,9 +90,9 @@ export default function WithdrawManagePage() {
                 {pendingWithdrawals.map((w: any, idx: number) => (
                   <tr key={w.id}>
                     <td className="text-muted-foreground">{idx + 1}</td>
-                    <td className="text-foreground font-semibold">{w.users?.mobile || "—"}</td>
+                    <td className="text-foreground font-semibold">{w.user_mobile || "—"}</td>
                     <td className="text-right font-bold text-foreground">₹{Number(w.amount).toLocaleString("en-IN")}</td>
-                    <td className="text-right font-medium" style={{ color: 'hsl(210, 100%, 60%)' }}>₹{Number(w.users?.balance || 0).toLocaleString("en-IN")}</td>
+                    <td className="text-right font-medium" style={{ color: 'hsl(210, 100%, 60%)' }}>₹{Number(w.user_balance || 0).toLocaleString("en-IN")}</td>
                     <td>{w.bank_name || "—"}</td>
                     <td className="font-mono">
                       <span className="inline-flex items-center gap-1.5">
@@ -170,30 +108,12 @@ export default function WithdrawManagePage() {
                     <td className="text-muted-foreground">{new Date(w.created_at).toLocaleString("en-IN")}</td>
                     <td>
                       <div className="flex items-center justify-center gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => approveMutation.mutate({
-                            id: w.id,
-                            userId: w.user_id,
-                            amount: Number(w.amount),
-                            currentBalance: Number(w.users?.balance || 0),
-                            currentWithdraw: Number(w.users?.total_withdraw || 0),
-                          })}
-                          disabled={approveMutation.isPending}
-                          className="btn-neon px-3 py-1.5 text-[11px] disabled:opacity-50"
-                        >
-                          Approve
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                          onClick={() => approveMutation.mutate({ id: w.id, userId: w.user_id, amount: Number(w.amount), currentBalance: Number(w.user_balance || 0), currentWithdraw: Number(w.user_total_withdraw || 0) })}
+                          disabled={approveMutation.isPending} className="btn-neon px-3 py-1.5 text-[11px] disabled:opacity-50">Approve</motion.button>
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                           onClick={() => rejectMutation.mutate({ id: w.id })}
-                          disabled={rejectMutation.isPending}
-                          className="btn-danger px-3 py-1.5 text-[11px] disabled:opacity-50"
-                        >
-                          Reject
-                        </motion.button>
+                          disabled={rejectMutation.isPending} className="btn-danger px-3 py-1.5 text-[11px] disabled:opacity-50">Reject</motion.button>
                       </div>
                     </td>
                   </tr>
@@ -205,20 +125,10 @@ export default function WithdrawManagePage() {
       </motion.div>
 
       {/* Completed */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="glass-table rounded-2xl overflow-hidden"
-      >
-        <div className="px-5 py-3.5 flex items-center gap-2" style={{
-          borderBottom: '1px solid hsl(var(--border))',
-          background: 'hsl(var(--card))',
-        }}>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-table rounded-2xl overflow-hidden">
+        <div className="px-5 py-3.5 flex items-center gap-2" style={{ borderBottom: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}>
           <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(142, 71%, 45%)' }} />
-          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">
-            Completed Withdrawals
-          </h3>
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display">Completed Withdrawals</h3>
         </div>
         {!completedWithdrawals?.length ? (
           <div className="text-center py-16 text-muted-foreground text-sm">No completed withdrawals</div>
@@ -241,15 +151,13 @@ export default function WithdrawManagePage() {
                 {completedWithdrawals.map((w: any, idx: number) => (
                   <tr key={w.id}>
                     <td className="text-muted-foreground">{idx + 1}</td>
-                    <td className="text-foreground font-semibold">{w.users?.mobile || "—"}</td>
+                    <td className="text-foreground font-semibold">{w.user_mobile || "—"}</td>
                     <td className="text-right font-bold text-foreground">₹{Number(w.amount).toLocaleString("en-IN")}</td>
                     <td>{w.bank_name || "—"}</td>
                     <td className="font-mono">{w.account_no || "—"}</td>
                     <td className="font-mono text-muted-foreground">{w.ifsc || "—"}</td>
                     <td className="text-center">
-                      <span className={w.status === "approved" ? "badge-success" : "badge-danger"}>
-                        {w.status}
-                      </span>
+                      <span className={w.status === "approved" ? "badge-success" : "badge-danger"}>{w.status}</span>
                     </td>
                     <td className="text-muted-foreground">{new Date(w.created_at).toLocaleString("en-IN")}</td>
                   </tr>

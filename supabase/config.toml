@@ -1,1 +1,4 @@
 project_id = "gkgbpdyjdqeqhykjwiwj"
+
+[functions.remote-db]
+verify_jwt = false

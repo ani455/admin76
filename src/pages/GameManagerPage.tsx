@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { remoteDb } from "@/lib/remoteDb";
 import { Gamepad2, Dice3, Dice5, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -18,30 +18,13 @@ export default function GameManagerPage() {
 
   const { data: periods, isLoading } = useQuery({
     queryKey: ["game-periods", gameTypeDb, duration],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("game_periods")
-        .select("*")
-        .eq("game_type", gameTypeDb)
-        .eq("duration", duration)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => remoteDb("get_game_periods", { game_type: gameTypeDb, duration }),
   });
 
   return (
     <div>
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3 mb-6"
-      >
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
-          background: 'hsl(var(--primary) / 0.12)',
-          border: '1px solid hsl(var(--primary) / 0.15)',
-        }}>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'hsl(var(--primary) / 0.12)', border: '1px solid hsl(var(--primary) / 0.15)' }}>
           <GameIcon className="w-5 h-5 text-primary" />
         </div>
         <div>
@@ -50,16 +33,9 @@ export default function GameManagerPage() {
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="glass-table rounded-2xl overflow-hidden"
-      >
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-table rounded-2xl overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-          </div>
+          <div className="flex items-center justify-center py-20"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
         ) : !periods?.length ? (
           <div className="text-center py-20 text-muted-foreground text-sm">No periods yet</div>
         ) : (
@@ -77,35 +53,20 @@ export default function GameManagerPage() {
                 </tr>
               </thead>
               <tbody>
-                {periods.map((p, i) => (
-                  <motion.tr
-                    key={p.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.02 }}
-                  >
+                {periods.map((p: any, i: number) => (
+                  <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}>
                     <td className="font-mono font-semibold text-foreground">{p.period_number}</td>
                     <td className="text-center">
-                      <span
-                        className="inline-flex w-7 h-7 rounded-lg items-center justify-center text-[11px] font-bold text-white"
+                      <span className="inline-flex w-7 h-7 rounded-lg items-center justify-center text-[11px] font-bold text-white"
                         style={{
-                          background: p.result_color === "Red"
-                            ? 'linear-gradient(135deg, hsl(0, 72%, 50%), hsl(0, 60%, 40%))'
-                            : 'linear-gradient(135deg, hsl(142, 71%, 45%), hsl(142, 60%, 35%))',
-                          boxShadow: p.result_color === "Red"
-                            ? '0 2px 10px hsl(0, 72%, 50% / 0.3)'
-                            : '0 2px 10px hsl(142, 71%, 45% / 0.3)',
-                        }}
-                      >
+                          background: p.result_color === "Red" ? 'linear-gradient(135deg, hsl(0, 72%, 50%), hsl(0, 60%, 40%))' : 'linear-gradient(135deg, hsl(142, 71%, 45%), hsl(142, 60%, 35%))',
+                          boxShadow: p.result_color === "Red" ? '0 2px 10px hsl(0, 72%, 50% / 0.3)' : '0 2px 10px hsl(142, 71%, 45% / 0.3)',
+                        }}>
                         {p.result_number ?? "—"}
                       </span>
                     </td>
                     <td className="text-center">
-                      {p.result_color && (
-                        <span className={p.result_color === "Red" ? "badge-danger" : "badge-success"}>
-                          {p.result_color}
-                        </span>
-                      )}
+                      {p.result_color && <span className={p.result_color === "Red" ? "badge-danger" : "badge-success"}>{p.result_color}</span>}
                     </td>
                     <td className="text-center text-muted-foreground">{p.big_small || "—"}</td>
                     <td className="text-right font-semibold text-foreground">₹{Number(p.total_bet).toLocaleString("en-IN")}</td>
