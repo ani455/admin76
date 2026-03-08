@@ -443,6 +443,43 @@ serve(async (req) => {
         break;
       }
 
+      // ===== SET GAME RESULT (manual control) =====
+      case "set_game_result": {
+        const { game_type, duration, result_number, result_color } = params;
+        // Update game_win_settings with manual override
+        let setNumber = result_number !== null && result_number !== undefined ? result_number : -1;
+        let setColor = result_color || "";
+        
+        // Map duration to the right table prefix
+        let settingsTable = "game_win_settings";
+        try {
+          // Try to update or insert manual override
+          const [[existing]] = await db.query("SELECT id FROM game_win_settings WHERE id=1");
+          if (existing) {
+            await db.query(
+              "UPDATE game_win_settings SET manual_number=?, manual_color=?, manual_game=?, manual_duration=? WHERE id=1",
+              [setNumber, setColor, game_type, duration]
+            );
+          }
+        } catch (_) {
+          // If manual columns don't exist, try adding them
+          try {
+            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_number INT DEFAULT -1");
+            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_color VARCHAR(20) DEFAULT ''");
+            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_game VARCHAR(20) DEFAULT ''");
+            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_duration VARCHAR(20) DEFAULT ''");
+            await db.query(
+              "UPDATE game_win_settings SET manual_number=?, manual_color=?, manual_game=?, manual_duration=? WHERE id=1",
+              [setNumber, setColor, game_type, duration]
+            );
+          } catch (_e) {
+            throw new Error("Could not set game result. Check game_win_settings table structure.");
+          }
+        }
+        result = { success: true };
+        break;
+      }
+
       // ===== WITHDRAW SENT (approved) =====
       case "get_withdraw_sent": {
         const [rows] = await db.query(
