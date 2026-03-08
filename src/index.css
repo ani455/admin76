@@ -6,33 +6,33 @@
 
 @layer base {
   :root {
-    --background: 230 22% 6%;
+    --background: 225 20% 11%;
     --foreground: 210 40% 96%;
 
-    --card: 228 20% 10%;
+    --card: 225 18% 15%;
     --card-foreground: 210 40% 96%;
 
-    --popover: 228 22% 9%;
+    --popover: 225 18% 14%;
     --popover-foreground: 210 40% 96%;
 
-    --primary: 160 84% 39%;
+    --primary: 220 90% 56%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 225 15% 14%;
+    --secondary: 225 15% 20%;
     --secondary-foreground: 210 40% 96%;
 
-    --muted: 225 15% 14%;
-    --muted-foreground: 220 12% 50%;
+    --muted: 225 15% 20%;
+    --muted-foreground: 220 12% 55%;
 
-    --accent: 160 84% 39%;
+    --accent: 220 90% 56%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 15% 16%;
-    --input: 225 15% 16%;
-    --ring: 160 84% 39%;
+    --border: 225 15% 22%;
+    --input: 225 15% 22%;
+    --ring: 220 90% 56%;
     --radius: 0.75rem;
 
     --success: 142 71% 45%;
@@ -42,28 +42,28 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    --sidebar-background: 228 25% 8%;
+    --sidebar-background: 225 20% 13%;
     --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary: 220 90% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 15% 14%;
+    --sidebar-accent: 225 15% 20%;
     --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 225 15% 14%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-border: 225 15% 20%;
+    --sidebar-ring: 220 90% 56%;
 
-    --login-bg: 230 25% 5%;
-    --login-card: 228 20% 10%;
-    --login-border: 225 15% 18%;
-    --login-input-bg: 230 22% 7%;
-    --login-muted: 220 12% 40%;
-    --login-accent: 160 84% 39%;
-    --login-accent-glow: 160 84% 39%;
+    --login-bg: 225 22% 9%;
+    --login-card: 225 18% 15%;
+    --login-border: 225 15% 24%;
+    --login-input-bg: 225 20% 12%;
+    --login-muted: 220 12% 45%;
+    --login-accent: 220 90% 56%;
+    --login-accent-glow: 220 90% 56%;
 
-    --neon-green: 160 84% 39%;
-    --neon-blue: 210 100% 55%;
+    --neon-green: 142 71% 45%;
+    --neon-blue: 220 90% 56%;
     --neon-purple: 270 80% 55%;
-    --glass-bg: 228 20% 10%;
-    --glass-border: 225 15% 18%;
+    --glass-bg: 225 18% 15%;
+    --glass-border: 225 15% 24%;
   }
 }
 
@@ -99,8 +99,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 20px hsl(160, 84%, 39% / 0.15); }
-  50% { box-shadow: 0 0 40px hsl(160, 84%, 39% / 0.3), 0 0 60px hsl(160, 84%, 39% / 0.1); }
+  0%, 100% { box-shadow: 0 0 20px hsl(220, 90%, 56% / 0.15); }
+  50% { box-shadow: 0 0 40px hsl(220, 90%, 56% / 0.3), 0 0 60px hsl(220, 90%, 56% / 0.1); }
 }
 
 @keyframes gradientFlow {
@@ -139,8 +139,8 @@
 }
 
 @keyframes borderGlow {
-  0%, 100% { border-color: hsl(160, 84%, 39% / 0.15); }
-  50% { border-color: hsl(160, 84%, 39% / 0.35); }
+  0%, 100% { border-color: hsl(220, 90%, 56% / 0.15); }
+  50% { border-color: hsl(220, 90%, 56% / 0.35); }
 }
 
 /* Animation classes */
@@ -171,20 +171,20 @@
 /* ═══════════════════════════════════════════ */
 
 .glass-card {
-  background: hsl(228, 20%, 10% / 0.6);
+  background: hsl(225, 18%, 15% / 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid hsl(225, 15%, 18% / 0.5);
+  border: 1px solid hsl(225, 15%, 24% / 0.5);
 }
 
 .glass-card-solid {
-  background: linear-gradient(135deg, hsl(228, 22%, 11%) 0%, hsl(230, 20%, 8%) 100%);
-  border: 1px solid hsl(225, 15%, 16%);
+  background: linear-gradient(135deg, hsl(225, 18%, 16%) 0%, hsl(225, 20%, 12%) 100%);
+  border: 1px solid hsl(225, 15%, 22%);
 }
 
 .glass-table {
-  background: hsl(228, 22%, 9%);
-  border: 1px solid hsl(225, 15%, 14%);
+  background: hsl(225, 18%, 14%);
+  border: 1px solid hsl(225, 15%, 20%);
 }
 
 /* ═══════════════════════════════════════════ */
@@ -213,23 +213,23 @@
 }
 
 .admin-table thead th {
-  background: hsl(228, 22%, 8%);
-  color: hsl(220, 12%, 45%);
+  background: hsl(225, 18%, 13%);
+  color: hsl(220, 12%, 50%);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 12px 16px;
-  border-bottom: 1px solid hsl(225, 15%, 14%);
+  border-bottom: 1px solid hsl(225, 15%, 20%);
   white-space: nowrap;
   font-family: 'Sora', sans-serif;
 }
 
 .admin-table tbody td {
   padding: 10px 16px;
-  border-bottom: 1px solid hsl(225, 15%, 11%);
+  border-bottom: 1px solid hsl(225, 15%, 17%);
   font-size: 12px;
-  color: hsl(210, 20%, 78%);
+  color: hsl(210, 20%, 82%);
   white-space: nowrap;
 }
 
@@ -238,7 +238,7 @@
 }
 
 .admin-table tbody tr:hover {
-  background: hsl(225, 20%, 12%);
+  background: hsl(225, 18%, 18%);
 }
 
 .admin-table tbody tr:last-child td {
@@ -261,18 +261,18 @@
 /* ═══════════════════════════════════════════ */
 
 .btn-neon {
-  background: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 32%));
+  background: linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%));
   color: white;
   font-weight: 600;
   border-radius: 12px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px hsl(160, 84%, 39% / 0.2);
+  box-shadow: 0 4px 20px hsl(220, 90%, 56% / 0.2);
   position: relative;
   overflow: hidden;
 }
 
 .btn-neon:hover {
-  box-shadow: 0 6px 30px hsl(160, 84%, 39% / 0.35);
+  box-shadow: 0 6px 30px hsl(220, 90%, 56% / 0.35);
   transform: translateY(-1px);
 }
 
@@ -343,8 +343,8 @@
 /* ═══════════════════════════════════════════ */
 
 .search-input {
-  background: hsl(230, 22%, 7%);
-  border: 1px solid hsl(225, 15%, 16%);
+  background: hsl(225, 20%, 12%);
+  border: 1px solid hsl(225, 15%, 22%);
   border-radius: 12px;
   padding: 10px 16px 10px 40px;
   font-size: 13px;
@@ -354,13 +354,13 @@
 }
 
 .search-input::placeholder {
-  color: hsl(220, 12%, 30%);
+  color: hsl(220, 12%, 35%);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: hsl(160, 84%, 39% / 0.4);
-  box-shadow: 0 0 0 3px hsl(160, 84%, 39% / 0.08), 0 0 20px hsl(160, 84%, 39% / 0.05);
+  border-color: hsl(220, 90%, 56% / 0.4);
+  box-shadow: 0 0 0 3px hsl(220, 90%, 56% / 0.08), 0 0 20px hsl(220, 90%, 56% / 0.05);
 }
 
 /* ═══════════════════════════════════════════ */
@@ -371,7 +371,7 @@
   position: absolute;
   width: 3px;
   height: 3px;
-  background: hsl(160, 84%, 39% / 0.4);
+  background: hsl(220, 90%, 56% / 0.4);
   border-radius: 50%;
   pointer-events: none;
   animation: particleFloat linear infinite;
@@ -382,8 +382,8 @@
 /* ═══════════════════════════════════════════ */
 
 .select-dark {
-  background: hsl(230, 22%, 7%);
-  border: 1px solid hsl(225, 15%, 16%);
+  background: hsl(225, 20%, 12%);
+  border: 1px solid hsl(225, 15%, 22%);
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 13px;
@@ -395,11 +395,11 @@
 
 .select-dark:focus {
   outline: none;
-  border-color: hsl(160, 84%, 39% / 0.4);
-  box-shadow: 0 0 0 3px hsl(160, 84%, 39% / 0.08);
+  border-color: hsl(220, 90%, 56% / 0.4);
+  box-shadow: 0 0 0 3px hsl(220, 90%, 56% / 0.08);
 }
 
 .select-dark option {
-  background: hsl(228, 22%, 9%);
+  background: hsl(225, 18%, 14%);
   color: hsl(210, 40%, 96%);
 }

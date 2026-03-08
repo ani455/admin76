@@ -46,13 +46,13 @@ export default function ManageUsersPage() {
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
-            background: 'hsl(210, 100%, 55% / 0.12)',
-            border: '1px solid hsl(210, 100%, 55% / 0.15)',
+            background: 'hsl(220, 90%, 56% / 0.12)',
+            border: '1px solid hsl(220, 90%, 56% / 0.15)',
           }}>
-            <Users className="w-5 h-5" style={{ color: 'hsl(210, 100%, 60%)' }} />
+            <Users className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white font-display">Manage Users</h2>
+            <h2 className="text-lg font-bold text-foreground font-display">Manage Users</h2>
             <p className="text-[11px] text-muted-foreground">{totalCount} total users</p>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function ManageUsersPage() {
       >
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'hsl(160, 84%, 45%)' }} />
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground text-sm">No users found</div>
@@ -106,12 +106,12 @@ export default function ManageUsersPage() {
                       animate={{ opacity: 1 }}
                       transition={{ delay: i * 0.015 }}
                     >
-                      <td className="font-mono font-semibold text-white">{user.mobile}</td>
+                      <td className="font-mono font-semibold text-foreground">{user.mobile}</td>
                       <td className="text-muted-foreground">{user.referral_code || "—"}</td>
                       <td className="font-mono text-muted-foreground">{user.ip_address || "—"}</td>
                       <td className="font-mono text-muted-foreground">{user.id.slice(0, 8)}</td>
-                      <td className="text-right font-bold text-white">₹{Number(user.balance).toLocaleString("en-IN")}</td>
-                      <td className="text-right font-medium" style={{ color: 'hsl(142, 71%, 50%)' }}>₹{Number(user.total_recharge).toLocaleString("en-IN")}</td>
+                      <td className="text-right font-bold text-foreground">₹{Number(user.balance).toLocaleString("en-IN")}</td>
+                      <td className="text-right font-medium text-success">₹{Number(user.total_recharge).toLocaleString("en-IN")}</td>
                       <td className="text-muted-foreground">{new Date(user.created_at).toLocaleDateString("en-IN")}</td>
                       <td className="text-center">
                         <div className="flex items-center justify-center gap-1.5">

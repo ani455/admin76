@@ -39,13 +39,13 @@ export default function GameManagerPage() {
         className="flex items-center gap-3 mb-6"
       >
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
-          background: 'hsl(160, 84%, 39% / 0.12)',
-          border: '1px solid hsl(160, 84%, 39% / 0.15)',
+          background: 'hsl(var(--primary) / 0.12)',
+          border: '1px solid hsl(var(--primary) / 0.15)',
         }}>
-          <GameIcon className="w-5 h-5" style={{ color: 'hsl(160, 84%, 45%)' }} />
+          <GameIcon className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white font-display">{gameType} Manager</h2>
+          <h2 className="text-lg font-bold text-foreground font-display">{gameType} Manager</h2>
           <p className="text-[11px] text-muted-foreground font-medium">{duration} duration periods</p>
         </div>
       </motion.div>
@@ -58,7 +58,7 @@ export default function GameManagerPage() {
       >
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'hsl(160, 84%, 45%)' }} />
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
           </div>
         ) : !periods?.length ? (
           <div className="text-center py-20 text-muted-foreground text-sm">No periods yet</div>
@@ -84,7 +84,7 @@ export default function GameManagerPage() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.02 }}
                   >
-                    <td className="font-mono font-semibold text-white">{p.period_number}</td>
+                    <td className="font-mono font-semibold text-foreground">{p.period_number}</td>
                     <td className="text-center">
                       <span
                         className="inline-flex w-7 h-7 rounded-lg items-center justify-center text-[11px] font-bold text-white"
@@ -108,8 +108,8 @@ export default function GameManagerPage() {
                       )}
                     </td>
                     <td className="text-center text-muted-foreground">{p.big_small || "—"}</td>
-                    <td className="text-right font-semibold text-white">₹{Number(p.total_bet).toLocaleString("en-IN")}</td>
-                    <td className="text-right font-medium" style={{ color: 'hsl(38, 92%, 55%)' }}>₹{Number(p.total_win).toLocaleString("en-IN")}</td>
+                    <td className="text-right font-semibold text-foreground">₹{Number(p.total_bet).toLocaleString("en-IN")}</td>
+                    <td className="text-right font-medium text-warning">₹{Number(p.total_win).toLocaleString("en-IN")}</td>
                     <td className="text-center text-muted-foreground">{p.users_count}</td>
                   </motion.tr>
                 ))}

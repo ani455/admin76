@@ -105,48 +105,48 @@ export default function Dashboard() {
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
-  type CardColor = "green" | "blue" | "orange" | "red";
+  type CardColor = "blue" | "teal" | "orange" | "red";
 
   const colorMap: Record<CardColor, { gradient: string; glow: string; iconColor: string; iconBg: string }> = {
-    green: {
-      gradient: 'linear-gradient(145deg, hsl(160, 40%, 12%) 0%, hsl(160, 30%, 7%) 100%)',
-      glow: 'hsl(160, 84%, 39% / 0.08)',
-      iconColor: 'hsl(160, 84%, 45%)',
-      iconBg: 'hsl(160, 84%, 39% / 0.12)',
-    },
     blue: {
-      gradient: 'linear-gradient(145deg, hsl(210, 40%, 13%) 0%, hsl(210, 30%, 7%) 100%)',
-      glow: 'hsl(210, 100%, 55% / 0.08)',
-      iconColor: 'hsl(210, 100%, 60%)',
-      iconBg: 'hsl(210, 100%, 55% / 0.12)',
+      gradient: 'linear-gradient(145deg, hsl(220, 35%, 18%) 0%, hsl(220, 25%, 13%) 100%)',
+      glow: 'hsl(220, 90%, 56% / 0.06)',
+      iconColor: 'hsl(220, 90%, 65%)',
+      iconBg: 'hsl(220, 90%, 56% / 0.12)',
+    },
+    teal: {
+      gradient: 'linear-gradient(145deg, hsl(170, 30%, 17%) 0%, hsl(170, 20%, 12%) 100%)',
+      glow: 'hsl(170, 80%, 45% / 0.06)',
+      iconColor: 'hsl(170, 80%, 50%)',
+      iconBg: 'hsl(170, 80%, 45% / 0.12)',
     },
     orange: {
-      gradient: 'linear-gradient(145deg, hsl(30, 40%, 12%) 0%, hsl(30, 30%, 7%) 100%)',
-      glow: 'hsl(38, 92%, 50% / 0.08)',
-      iconColor: 'hsl(38, 92%, 55%)',
+      gradient: 'linear-gradient(145deg, hsl(30, 35%, 17%) 0%, hsl(30, 25%, 12%) 100%)',
+      glow: 'hsl(38, 92%, 50% / 0.06)',
+      iconColor: 'hsl(38, 92%, 58%)',
       iconBg: 'hsl(38, 92%, 50% / 0.12)',
     },
     red: {
-      gradient: 'linear-gradient(145deg, hsl(0, 35%, 13%) 0%, hsl(0, 25%, 7%) 100%)',
-      glow: 'hsl(0, 72%, 51% / 0.08)',
-      iconColor: 'hsl(0, 72%, 55%)',
+      gradient: 'linear-gradient(145deg, hsl(0, 30%, 18%) 0%, hsl(0, 20%, 13%) 100%)',
+      glow: 'hsl(0, 72%, 51% / 0.06)',
+      iconColor: 'hsl(0, 72%, 60%)',
       iconBg: 'hsl(0, 72%, 51% / 0.12)',
     },
   };
 
   const cards: { title: string; value: string | number; icon: React.ElementType; color: CardColor }[] = [
-    { title: "Today User Join", value: todayUsers, icon: UserPlus, color: "green" },
-    { title: "Today's Recharge", value: fmt(depositStats?.todayRecharge || 0), icon: IndianRupee, color: "green" },
+    { title: "Today User Join", value: todayUsers, icon: UserPlus, color: "blue" },
+    { title: "Today's Recharge", value: fmt(depositStats?.todayRecharge || 0), icon: IndianRupee, color: "teal" },
     { title: "Today's Withdrawal", value: fmt(depositStats?.todayWithdraw || 0), icon: ArrowDownToLine, color: "orange" },
     { title: "User Balance", value: fmt(userBalance), icon: Wallet, color: "blue" },
     { title: "Total Users", value: totalUsers, icon: Users, color: "blue" },
     { title: "Pending Recharge", value: fmt(depositStats?.pendingRecharge || 0), icon: Clock, color: "orange" },
-    { title: "Success Recharge", value: fmt(depositStats?.successRecharge || 0), icon: CheckCircle, color: "green" },
+    { title: "Success Recharge", value: fmt(depositStats?.successRecharge || 0), icon: CheckCircle, color: "teal" },
     { title: "Total Withdrawal", value: fmt(depositStats?.totalWithdrawal || 0), icon: ArrowUpFromLine, color: "blue" },
     { title: "Withdrawal Requests", value: fmt(depositStats?.withdrawalRequests || 0), icon: AlertTriangle, color: "red" },
     { title: "Today's Total Bet", value: fmt(betStats?.totalBet || 0), icon: TrendingUp, color: "blue" },
-    { title: "Today's Total Win", value: fmt(betStats?.totalWin || 0), icon: Trophy, color: "green" },
-    { title: "Today's Profit", value: fmt(betStats?.profit || 0), icon: Percent, color: "green" },
+    { title: "Today's Total Win", value: fmt(betStats?.totalWin || 0), icon: Trophy, color: "teal" },
+    { title: "Today's Profit", value: fmt(betStats?.profit || 0), icon: Percent, color: "teal" },
   ];
 
   return (
@@ -179,11 +179,10 @@ export default function Dashboard() {
               className="rounded-2xl p-4 lg:p-5 relative overflow-hidden cursor-default group"
               style={{
                 background: c.gradient,
-                border: '1px solid hsl(225, 15%, 14%)',
+                border: '1px solid hsl(var(--border))',
                 boxShadow: `0 0 30px ${c.glow}`,
               }}
             >
-              {/* Subtle corner glow */}
               <div
                 className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{ background: c.iconColor }}
@@ -201,7 +200,7 @@ export default function Dashboard() {
                     <card.icon className="w-4 h-4" style={{ color: c.iconColor }} />
                   </div>
                 </div>
-                <p className="text-xl lg:text-2xl font-bold text-white font-display tracking-tight">
+                <p className="text-xl lg:text-2xl font-bold text-foreground font-display tracking-tight">
                   {card.value}
                 </p>
               </div>
@@ -221,14 +220,14 @@ export default function Dashboard() {
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{
-              background: 'hsl(160, 84%, 39% / 0.12)',
-              border: '1px solid hsl(160, 84%, 39% / 0.15)',
+              background: 'hsl(var(--primary) / 0.12)',
+              border: '1px solid hsl(var(--primary) / 0.15)',
             }}
           >
-            <Settings className="w-5 h-5" style={{ color: 'hsl(160, 84%, 45%)' }} />
+            <Settings className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white font-display">Game Settings</h3>
+            <h3 className="text-sm font-bold text-foreground font-display">Game Settings</h3>
             <p className="text-[11px] text-muted-foreground">Configure game modes and processing</p>
           </div>
         </div>
@@ -271,7 +270,7 @@ export default function Dashboard() {
           disabled={settingsMutation.isPending}
           className="btn-neon inline-flex items-center gap-2.5 px-6 py-3 text-[13px] font-display disabled:opacity-50 login-shimmer-btn"
           style={{
-            background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 32%), hsl(160, 84%, 39%))',
+            background: 'linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%), hsl(220, 90%, 56%))',
             backgroundSize: '200% 100%',
           }}
         >

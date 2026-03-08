@@ -4,12 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 function Particles() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: 25 }).map((_, i) => (
+      {Array.from({ length: 20 }).map((_, i) => (
         <div
           key={i}
           className="particle"
@@ -20,7 +20,7 @@ function Particles() {
             height: `${2 + Math.random() * 3}px`,
             animationDuration: `${8 + Math.random() * 15}s`,
             animationDelay: `${Math.random() * 10}s`,
-            opacity: 0.2 + Math.random() * 0.4,
+            opacity: 0.15 + Math.random() * 0.3,
           }}
         />
       ))}
@@ -64,13 +64,13 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'hsl(230, 25%, 4%)' }}>
+    <div className="min-h-screen flex bg-background">
       {/* Animated Orbs Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute w-[700px] h-[700px] rounded-full blur-[150px] morph-blob"
           style={{
-            background: 'hsl(160, 84%, 39% / 0.08)',
+            background: 'hsl(220, 90%, 56% / 0.06)',
             top: '-15%', left: '-10%',
             animation: 'loginGlow 12s ease-in-out infinite, morphBlob 20s ease-in-out infinite',
           }}
@@ -78,19 +78,10 @@ export default function LoginPage() {
         <div
           className="absolute w-[500px] h-[500px] rounded-full blur-[120px] morph-blob"
           style={{
-            background: 'hsl(210, 100%, 55% / 0.06)',
+            background: 'hsl(270, 80%, 55% / 0.05)',
             bottom: '-10%', right: '-5%',
             animation: 'loginGlow 15s ease-in-out infinite, morphBlob 25s ease-in-out infinite',
             animationDelay: '3s',
-          }}
-        />
-        <div
-          className="absolute w-[300px] h-[300px] rounded-full blur-[80px]"
-          style={{
-            background: 'hsl(270, 80%, 55% / 0.04)',
-            top: '50%', left: '40%',
-            animation: 'loginGlow 10s ease-in-out infinite',
-            animationDelay: '5s',
           }}
         />
       </div>
@@ -120,7 +111,7 @@ export default function LoginPage() {
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center pulse-glow"
               style={{
-                background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 30%))',
+                background: 'linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 45%))',
               }}
             >
               <Shield className="w-7 h-7 text-white" />
@@ -129,7 +120,7 @@ export default function LoginPage() {
               <h2 className="text-2xl font-bold text-white tracking-tight font-display">
                 ALADDINN
               </h2>
-              <p className="text-xs text-[hsl(220,12%,40%)] font-medium font-mono">
+              <p className="text-xs text-muted-foreground font-medium font-mono">
                 Control Panel v2.0
               </p>
             </div>
@@ -142,7 +133,7 @@ export default function LoginPage() {
             className="text-[52px] font-extrabold text-white leading-[1.05] tracking-[-0.03em] mb-6 font-display"
           >
             Manage.<br />
-            <span style={{ color: 'hsl(160, 84%, 45%)' }}>Monitor.</span><br />
+            <span className="text-primary">Monitor.</span><br />
             Control.
           </motion.h1>
 
@@ -150,7 +141,7 @@ export default function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-[15px] text-[hsl(220,12%,50%)] leading-relaxed max-w-sm"
+            className="text-[15px] text-muted-foreground leading-relaxed max-w-sm"
           >
             Real-time analytics, user management, and complete platform control from one secure dashboard.
           </motion.p>
@@ -165,9 +156,9 @@ export default function LoginPage() {
                 transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }}
                 className="glass-card rounded-2xl p-4 border-glow"
               >
-                <stat.icon className="w-4 h-4 mb-2" style={{ color: 'hsl(160, 84%, 45%)' }} />
+                <stat.icon className="w-4 h-4 mb-2 text-primary" />
                 <p className="text-xl font-bold text-white font-display">{stat.value}</p>
-                <p className="text-[10px] text-[hsl(220,12%,40%)] mt-1 font-semibold uppercase tracking-wider">
+                <p className="text-[10px] text-muted-foreground mt-1 font-semibold uppercase tracking-wider">
                   {stat.label}
                 </p>
               </motion.div>
@@ -178,9 +169,8 @@ export default function LoginPage() {
 
       {/* Right Panel - Login Form */}
       <div className="w-full lg:w-[45%] flex items-center justify-center px-6 relative z-10">
-        {/* Left border gradient */}
         <div className="hidden lg:block absolute left-0 top-[10%] bottom-[10%] w-px" style={{
-          background: 'linear-gradient(to bottom, transparent, hsl(225, 15%, 18%), transparent)',
+          background: 'linear-gradient(to bottom, transparent, hsl(var(--border)), transparent)',
         }} />
 
         <motion.div
@@ -200,7 +190,7 @@ export default function LoginPage() {
               <div
                 className="w-11 h-11 rounded-xl flex items-center justify-center pulse-glow"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 30%))',
+                  background: 'linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 45%))',
                 }}
               >
                 <Shield className="w-5 h-5 text-white" />
@@ -213,7 +203,7 @@ export default function LoginPage() {
             <h2 className="text-3xl font-bold text-white tracking-tight font-display">
               Welcome back
             </h2>
-            <p className="text-sm text-[hsl(220,12%,40%)] mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Sign in to access your admin dashboard
             </p>
           </div>
@@ -225,16 +215,16 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <label className="block text-[11px] font-bold text-[hsl(220,12%,50%)] mb-2.5 uppercase tracking-wider font-display">
+              <label className="block text-[11px] font-bold text-muted-foreground mb-2.5 uppercase tracking-wider font-display">
                 Email Address
               </label>
               <div className={`relative rounded-xl transition-all duration-300 ${
                 focused === 'email'
-                  ? 'shadow-[0_0_0_2px_hsl(160,84%,39%/0.25),0_0_25px_hsl(160,84%,39%/0.08)]'
+                  ? 'shadow-[0_0_0_2px_hsl(220,90%,56%/0.25),0_0_25px_hsl(220,90%,56%/0.08)]'
                   : ''
               }`}>
                 <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                  focused === 'email' ? 'text-[hsl(160,84%,45%)]' : 'text-[hsl(220,12%,25%)]'
+                  focused === 'email' ? 'text-primary' : 'text-muted-foreground/50'
                 }`}>
                   <Mail className="w-4 h-4" />
                 </div>
@@ -246,7 +236,7 @@ export default function LoginPage() {
                   onBlur={() => setFocused(null)}
                   placeholder="admin@aladdinn.com"
                   required
-                  className="w-full h-[52px] rounded-xl bg-[hsl(230,22%,7%)] border border-[hsl(225,15%,16%)] pl-12 pr-4 text-[13px] text-white placeholder:text-[hsl(220,12%,22%)] focus:outline-none transition-all duration-300 focus:border-[hsl(160,84%,39%/0.4)]"
+                  className="w-full h-[52px] rounded-xl bg-secondary border border-border pl-12 pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
                 />
               </div>
             </motion.div>
@@ -257,16 +247,16 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <label className="block text-[11px] font-bold text-[hsl(220,12%,50%)] mb-2.5 uppercase tracking-wider font-display">
+              <label className="block text-[11px] font-bold text-muted-foreground mb-2.5 uppercase tracking-wider font-display">
                 Password
               </label>
               <div className={`relative rounded-xl transition-all duration-300 ${
                 focused === 'password'
-                  ? 'shadow-[0_0_0_2px_hsl(160,84%,39%/0.25),0_0_25px_hsl(160,84%,39%/0.08)]'
+                  ? 'shadow-[0_0_0_2px_hsl(220,90%,56%/0.25),0_0_25px_hsl(220,90%,56%/0.08)]'
                   : ''
               }`}>
                 <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                  focused === 'password' ? 'text-[hsl(160,84%,45%)]' : 'text-[hsl(220,12%,25%)]'
+                  focused === 'password' ? 'text-primary' : 'text-muted-foreground/50'
                 }`}>
                   <Lock className="w-4 h-4" />
                 </div>
@@ -278,12 +268,12 @@ export default function LoginPage() {
                   onBlur={() => setFocused(null)}
                   placeholder="Enter your password"
                   required
-                  className="w-full h-[52px] rounded-xl bg-[hsl(230,22%,7%)] border border-[hsl(225,15%,16%)] pl-12 pr-12 text-[13px] text-white placeholder:text-[hsl(220,12%,22%)] focus:outline-none transition-all duration-300 focus:border-[hsl(160,84%,39%/0.4)]"
+                  className="w-full h-[52px] rounded-xl bg-secondary border border-border pl-12 pr-12 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[hsl(220,12%,25%)] hover:text-[hsl(220,12%,50%)] transition-colors duration-200"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -301,8 +291,8 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full h-[52px] mt-3 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2.5 transition-all duration-300 disabled:opacity-50 active:scale-[0.97] group login-shimmer-btn font-display"
                 style={{
-                  background: 'linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 32%), hsl(160, 84%, 39%))',
-                  boxShadow: '0 4px 30px hsl(160, 84%, 39% / 0.25), 0 0 0 1px hsl(160, 84%, 39% / 0.15)',
+                  background: 'linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%), hsl(220, 90%, 56%))',
+                  boxShadow: '0 4px 30px hsl(220, 90%, 56% / 0.25), 0 0 0 1px hsl(220, 90%, 56% / 0.15)',
                 }}
               >
                 {loading ? (
@@ -322,15 +312,14 @@ export default function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-10 pt-6"
-            style={{ borderTop: '1px solid hsl(225, 15%, 12%)' }}
+            className="mt-10 pt-6 border-t border-border"
           >
             <div className="flex items-center justify-center gap-2.5">
               <div className="relative">
-                <div className="w-2 h-2 rounded-full" style={{ background: 'hsl(142, 71%, 45%)' }} />
-                <div className="absolute inset-0 w-2 h-2 rounded-full animate-ping opacity-40" style={{ background: 'hsl(142, 71%, 45%)' }} />
+                <div className="w-2 h-2 rounded-full bg-success" />
+                <div className="absolute inset-0 w-2 h-2 rounded-full animate-ping opacity-40 bg-success" />
               </div>
-              <span className="text-[11px] text-[hsl(220,12%,35%)] font-medium">
+              <span className="text-[11px] text-muted-foreground font-medium">
                 System Operational · All Services Running
               </span>
             </div>
