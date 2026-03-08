@@ -443,40 +443,212 @@ serve(async (req) => {
         break;
       }
 
-      // ===== SET GAME RESULT (manual control) =====
+      // ===== SET GAME RESULT (prediction - matches hastacalita_phalitansa from PHP) =====
       case "set_game_result": {
-        const { game_type, duration, result_number, result_color } = params;
-        // Update game_win_settings with manual override
-        let setNumber = result_number !== null && result_number !== undefined ? result_number : -1;
-        let setColor = result_color || "";
-        
-        // Map duration to the right table prefix
-        let settingsTable = "game_win_settings";
-        try {
-          // Try to update or insert manual override
-          const [[existing]] = await db.query("SELECT id FROM game_win_settings WHERE id=1");
-          if (existing) {
-            await db.query(
-              "UPDATE game_win_settings SET manual_number=?, manual_color=?, manual_game=?, manual_duration=? WHERE id=1",
-              [setNumber, setColor, game_type, duration]
-            );
-          }
-        } catch (_) {
-          // If manual columns don't exist, try adding them
-          try {
-            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_number INT DEFAULT -1");
-            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_color VARCHAR(20) DEFAULT ''");
-            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_game VARCHAR(20) DEFAULT ''");
-            await db.query("ALTER TABLE game_win_settings ADD COLUMN manual_duration VARCHAR(20) DEFAULT ''");
-            await db.query(
-              "UPDATE game_win_settings SET manual_number=?, manual_color=?, manual_game=?, manual_duration=? WHERE id=1",
-              [setNumber, setColor, game_type, duration]
-            );
-          } catch (_e) {
-            throw new Error("Could not set game result. Check game_win_settings table structure.");
-          }
+        const { game_type, duration, result_number } = params;
+        // Table: hastacalita_phalitansa (wingo 1min)
+        // Different durations use different tables with suffixes
+        let predTable = "hastacalita_phalitansa";
+        if (game_type === "wingo") {
+          if (duration === "3min") predTable = "hastacalita_phalitansa_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_funf";
+          else if (duration === "30sec" || duration === "10min") predTable = "hastacalita_phalitansa_zehn";
+        } else if (game_type === "k3") {
+          predTable = "hastacalita_phalitansa_kemuru";
+          if (duration === "3min") predTable = "hastacalita_phalitansa_kemuru_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_kemuru_funf";
+          else if (duration === "10min") predTable = "hastacalita_phalitansa_kemuru_zehn";
+        } else if (game_type === "5d") {
+          predTable = "hastacalita_phalitansa_aidudi";
+          if (duration === "3min") predTable = "hastacalita_phalitansa_aidudi_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_aidudi_funf";
+          else if (duration === "10min") predTable = "hastacalita_phalitansa_aidudi_zehn";
         }
+        
+        // First unset all predictions (sthiti='0'), then set the chosen number (sthiti='1')
+        await db.query(`UPDATE \`${predTable}\` SET sthiti='0'`);
+        await db.query(`UPDATE \`${predTable}\` SET sthiti='1' WHERE sankhye=?`, [result_number]);
         result = { success: true };
+        break;
+      }
+
+      // ===== UNSET GAME RESULT (reset all predictions) =====
+      case "unset_game_result": {
+        const { game_type, duration } = params;
+        let predTable = "hastacalita_phalitansa";
+        if (game_type === "wingo") {
+          if (duration === "3min") predTable = "hastacalita_phalitansa_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_funf";
+          else if (duration === "30sec" || duration === "10min") predTable = "hastacalita_phalitansa_zehn";
+        } else if (game_type === "k3") {
+          predTable = "hastacalita_phalitansa_kemuru";
+          if (duration === "3min") predTable = "hastacalita_phalitansa_kemuru_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_kemuru_funf";
+          else if (duration === "10min") predTable = "hastacalita_phalitansa_kemuru_zehn";
+        } else if (game_type === "5d") {
+          predTable = "hastacalita_phalitansa_aidudi";
+          if (duration === "3min") predTable = "hastacalita_phalitansa_aidudi_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_aidudi_funf";
+          else if (duration === "10min") predTable = "hastacalita_phalitansa_aidudi_zehn";
+        }
+        await db.query(`UPDATE \`${predTable}\` SET sthiti='0'`);
+        result = { success: true };
+        break;
+      }
+
+      // ===== GET CURRENT PREDICTION =====
+      case "get_current_prediction": {
+        const { game_type, duration } = params;
+        let predTable = "hastacalita_phalitansa";
+        if (game_type === "wingo") {
+          if (duration === "3min") predTable = "hastacalita_phalitansa_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_funf";
+          else if (duration === "30sec" || duration === "10min") predTable = "hastacalita_phalitansa_zehn";
+        } else if (game_type === "k3") {
+          predTable = "hastacalita_phalitansa_kemuru";
+          if (duration === "3min") predTable = "hastacalita_phalitansa_kemuru_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_kemuru_funf";
+          else if (duration === "10min") predTable = "hastacalita_phalitansa_kemuru_zehn";
+        } else if (game_type === "5d") {
+          predTable = "hastacalita_phalitansa_aidudi";
+          if (duration === "3min") predTable = "hastacalita_phalitansa_aidudi_drei";
+          else if (duration === "5min") predTable = "hastacalita_phalitansa_aidudi_funf";
+          else if (duration === "10min") predTable = "hastacalita_phalitansa_aidudi_zehn";
+        }
+        try {
+          const [rows] = await db.query(`SELECT sankhye, banna FROM \`${predTable}\` WHERE sthiti='1' LIMIT 1`);
+          result = (rows as any[])[0] || null;
+        } catch (_) { result = null; }
+        break;
+      }
+
+      // ===== LIVE BETS (real-time bets for current period) =====
+      case "get_live_bets": {
+        const { game_type, duration } = params;
+        // Get bet table and period table
+        let betTable = "bajikattuttate";
+        let periodTable = "gelluonduhogu";
+        if (game_type === "wingo") {
+          if (duration === "3min") { betTable = "bajikattuttate_drei"; periodTable = "gelluonduhogu_drei"; }
+          else if (duration === "5min") { betTable = "bajikattuttate_funf"; periodTable = "gelluonduhogu_funf"; }
+          else if (duration === "30sec" || duration === "10min") { betTable = "bajikattuttate_zehn"; periodTable = "gelluonduhogu_zehn"; }
+        } else if (game_type === "k3") {
+          betTable = "bajikattuttate_kemuru"; periodTable = "gelluonduhogu_kemuru";
+          if (duration === "3min") { betTable = "bajikattuttate_kemuru_drei"; periodTable = "gelluonduhogu_kemuru_drei"; }
+          else if (duration === "5min") { betTable = "bajikattuttate_kemuru_funf"; periodTable = "gelluonduhogu_kemuru_funf"; }
+          else if (duration === "10min") { betTable = "bajikattuttate_kemuru_zehn"; periodTable = "gelluonduhogu_kemuru_zehn"; }
+        } else if (game_type === "5d") {
+          betTable = "bajikattuttate_aidudi"; periodTable = "gelluonduhogu_aidudi";
+          if (duration === "3min") { betTable = "bajikattuttate_aidudi_drei"; periodTable = "gelluonduhogu_aidudi_drei"; }
+          else if (duration === "5min") { betTable = "bajikattuttate_aidudi_funf"; periodTable = "gelluonduhogu_aidudi_funf"; }
+          else if (duration === "10min") { betTable = "bajikattuttate_aidudi_zehn"; periodTable = "gelluonduhogu_aidudi_zehn"; }
+        }
+        
+        try {
+          // Get current period ID
+          const [[periodRow]] = await db.query(`SELECT atadaaidi FROM \`${periodTable}\` ORDER BY kramasankhye DESC LIMIT 1`);
+          if (!periodRow) { result = []; break; }
+          const currentPeriod = periodRow.atadaaidi;
+          
+          // Get live bets for this period
+          // ojana mapping: 10=Red, 11=Green, 12=Violet, 13=Big, 14=Small, 0-9=number
+          const [rows] = await db.query(
+            `SELECT b.byabaharkarta as user_id, b.ojana as bet_value_raw, b.ketebida as amount,
+                    (SELECT mobile FROM shonu_subjects WHERE id = b.byabaharkarta) as mobile,
+                    (SELECT motta FROM shonu_kaichila WHERE balakedara = b.byabaharkarta) as balance
+             FROM \`${betTable}\` b
+             WHERE b.kalaparichaya = ?
+             ORDER BY b.shonu DESC LIMIT 50`,
+            [currentPeriod]
+          );
+          
+          result = (rows as any[]).map((r: any) => {
+            let val = r.bet_value_raw;
+            if (val == 10) val = "Red";
+            else if (val == 11) val = "Green";
+            else if (val == 12) val = "Violet";
+            else if (val == 13) val = "Big";
+            else if (val == 14) val = "Small";
+            return { ...r, bet_value: String(val) };
+          });
+        } catch (_) { result = []; }
+        break;
+      }
+
+      // ===== BET SUMMARY (total bet for current period) =====
+      case "get_bet_summary": {
+        const { game_type, duration } = params;
+        let betTable = "bajikattuttate";
+        let periodTable = "gelluonduhogu";
+        if (game_type === "wingo") {
+          if (duration === "3min") { betTable = "bajikattuttate_drei"; periodTable = "gelluonduhogu_drei"; }
+          else if (duration === "5min") { betTable = "bajikattuttate_funf"; periodTable = "gelluonduhogu_funf"; }
+          else if (duration === "30sec" || duration === "10min") { betTable = "bajikattuttate_zehn"; periodTable = "gelluonduhogu_zehn"; }
+        } else if (game_type === "k3") {
+          betTable = "bajikattuttate_kemuru"; periodTable = "gelluonduhogu_kemuru";
+          if (duration === "3min") { betTable = "bajikattuttate_kemuru_drei"; periodTable = "gelluonduhogu_kemuru_drei"; }
+          else if (duration === "5min") { betTable = "bajikattuttate_kemuru_funf"; periodTable = "gelluonduhogu_kemuru_funf"; }
+          else if (duration === "10min") { betTable = "bajikattuttate_kemuru_zehn"; periodTable = "gelluonduhogu_kemuru_zehn"; }
+        } else if (game_type === "5d") {
+          betTable = "bajikattuttate_aidudi"; periodTable = "gelluonduhogu_aidudi";
+          if (duration === "3min") { betTable = "bajikattuttate_aidudi_drei"; periodTable = "gelluonduhogu_aidudi_drei"; }
+          else if (duration === "5min") { betTable = "bajikattuttate_aidudi_funf"; periodTable = "gelluonduhogu_aidudi_funf"; }
+          else if (duration === "10min") { betTable = "bajikattuttate_aidudi_zehn"; periodTable = "gelluonduhogu_aidudi_zehn"; }
+        }
+        
+        try {
+          const [[periodRow]] = await db.query(`SELECT atadaaidi FROM \`${periodTable}\` ORDER BY kramasankhye DESC LIMIT 1`);
+          if (!periodRow) { result = { total_bet: 0, details: [] }; break; }
+          const currentPeriod = periodRow.atadaaidi;
+          
+          // Total bet amount (minus 2% fee like PHP)
+          const [[totalRow]] = await db.query(
+            `SELECT COALESCE(SUM(ketebida) - (SUM(ketebida)/100*2), 0) as total FROM \`${betTable}\` WHERE kalaparichaya = ?`,
+            [currentPeriod]
+          );
+          
+          // Per-number breakdown
+          const details: any[] = [];
+          for (let n = 0; n <= 9; n++) {
+            const [[numRow]] = await db.query(
+              `SELECT COUNT(DISTINCT byabaharkarta) as user_count, COALESCE(SUM(ketebida), 0) as bet_amount
+               FROM \`${betTable}\` WHERE kalaparichaya = ? AND ojana = ?`,
+              [currentPeriod, n]
+            );
+            if (Number(numRow.bet_amount) > 0) {
+              details.push({
+                number: n,
+                bet_amount: Number(numRow.bet_amount),
+                user_count: Number(numRow.user_count),
+                payout: Number(numRow.bet_amount) * 9 * 0.98,
+              });
+            }
+          }
+          
+          // Color bets (10=Red, 11=Green, 12=Violet, 13=Big, 14=Small)
+          const colorMap = [
+            { code: 10, name: "Red" }, { code: 11, name: "Green" }, { code: 12, name: "Violet" },
+            { code: 13, name: "Big" }, { code: 14, name: "Small" },
+          ];
+          for (const c of colorMap) {
+            const [[cRow]] = await db.query(
+              `SELECT COUNT(DISTINCT byabaharkarta) as user_count, COALESCE(SUM(ketebida), 0) as bet_amount
+               FROM \`${betTable}\` WHERE kalaparichaya = ? AND ojana = ?`,
+              [currentPeriod, c.code]
+            );
+            if (Number(cRow.bet_amount) > 0) {
+              const multiplier = c.name === "Violet" ? 4.5 : 2;
+              details.push({
+                number: c.name,
+                bet_amount: Number(cRow.bet_amount),
+                user_count: Number(cRow.user_count),
+                payout: Number(cRow.bet_amount) * multiplier * 0.98,
+              });
+            }
+          }
+          
+          result = { total_bet: Number(totalRow.total), details };
+        } catch (_) { result = { total_bet: 0, details: [] }; }
         break;
       }
 
