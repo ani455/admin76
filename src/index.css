@@ -261,18 +261,18 @@
 /* ═══════════════════════════════════════════ */
 
 .btn-neon {
-  background: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 70%, 32%));
+  background: linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%));
   color: white;
   font-weight: 600;
   border-radius: 12px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px hsl(160, 84%, 39% / 0.2);
+  box-shadow: 0 4px 20px hsl(220, 90%, 56% / 0.2);
   position: relative;
   overflow: hidden;
 }
 
 .btn-neon:hover {
-  box-shadow: 0 6px 30px hsl(160, 84%, 39% / 0.35);
+  box-shadow: 0 6px 30px hsl(220, 90%, 56% / 0.35);
   transform: translateY(-1px);
 }
 
