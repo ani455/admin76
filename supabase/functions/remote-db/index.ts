@@ -764,6 +764,127 @@ serve(async (req) => {
         break;
       }
 
+      // ===== UPLINE CHAIN =====
+      case "get_upline_chain": {
+        const { userId } = params;
+        // Find user first by id or mobile
+        const [[startUser]] = await db.query(
+          `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, COALESCE(sk.motta,0) as balance
+           FROM shonu_subjects s LEFT JOIN shonu_kaichila sk ON sk.balakedara = s.id
+           WHERE s.id = ? OR s.mobile = ?`, [userId, userId]
+        );
+        if (!startUser) throw new Error("User not found");
+
+        const chain = [startUser];
+        let current = startUser;
+        for (let i = 0; i < 20; i++) {
+          if (!current.referral_code || current.referral_code === "255860337165") break;
+          // Find user whose owncode matches current's referral_code
+          const [[parent]] = await db.query(
+            `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, COALESCE(sk.motta,0) as balance
+             FROM shonu_subjects s LEFT JOIN shonu_kaichila sk ON sk.balakedara = s.id
+             WHERE s.owncode = ?`, [current.referral_code]
+          );
+          if (!parent || chain.some(c => c.id === parent.id)) break;
+          chain.push(parent);
+          current = parent;
+        }
+        result = chain;
+        break;
+      }
+
+      // ===== SUBORDINATE DATA =====
+      case "get_subordinate_data": {
+        const { userId } = params;
+        const [[user]] = await db.query("SELECT id, owncode FROM shonu_subjects WHERE id = ? OR mobile = ?", [userId, userId]);
+        if (!user) throw new Error("User not found");
+
+        const [referrals] = await db.query(
+          `SELECT s.id, s.mobile, s.createdate as created_at, COALESCE(sk.motta,0) as balance,
+                  (SELECT COALESCE(SUM(motta),0) FROM thevani WHERE balakedara=s.id AND sthiti='1') as total_recharge,
+                  (SELECT COALESCE(SUM(motta),0) FROM hintegedukolli WHERE balakedara=s.id AND sthiti='1') as total_withdraw
+           FROM shonu_subjects s LEFT JOIN shonu_kaichila sk ON sk.balakedara=s.id
+           WHERE s.code = ? ORDER BY s.id DESC LIMIT 100`, [user.owncode]
+        );
+
+        const summary = {
+          totalReferrals: (referrals as any[]).length,
+          totalRecharge: (referrals as any[]).reduce((s: number, r: any) => s + Number(r.total_recharge), 0),
+          totalWithdraw: (referrals as any[]).reduce((s: number, r: any) => s + Number(r.total_withdraw), 0),
+          totalBalance: (referrals as any[]).reduce((s: number, r: any) => s + Number(r.balance), 0),
+        };
+
+        result = { referrals, summary };
+        break;
+      }
+
+      // ===== USER ACTIVITY =====
+      case "get_user_activity": {
+        const { userId } = params;
+        const [[user]] = await db.query("SELECT id FROM shonu_subjects WHERE id = ? OR mobile = ?", [userId, userId]);
+        if (!user) throw new Error("User not found");
+        const uid = user.id;
+
+        // Deposits
+        const [deposits] = await db.query(
+          `SELECT shonu as id, motta as amount, ullekha as utr, dinankavannuracisi as created_at,
+                  CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
+           FROM thevani WHERE balakedara = ? ORDER BY shonu DESC LIMIT 20`, [uid]
+        );
+
+        // Withdrawals
+        const [withdrawals] = await db.query(
+          `SELECT shonu as id, motta as amount, dinankavannuracisi as created_at,
+                  CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
+           FROM hintegedukolli WHERE balakedara = ? ORDER BY shonu DESC LIMIT 20`, [uid]
+        );
+
+        // Bet stats + recent bets
+        const betTables = [
+          { table: 'bajikattuttate', name: 'Wingo 1min' },
+          { table: 'bajikattuttate_drei', name: 'Wingo 3min' },
+          { table: 'bajikattuttate_funf', name: 'Wingo 5min' },
+          { table: 'bajikattuttate_zehn', name: 'Wingo 30sec' },
+          { table: 'bajikattuttate_kemuru', name: 'K3 1min' },
+          { table: 'bajikattuttate_kemuru_drei', name: 'K3 3min' },
+          { table: 'bajikattuttate_kemuru_funf', name: 'K3 5min' },
+          { table: 'bajikattuttate_kemuru_zehn', name: 'K3 10min' },
+          { table: 'bajikattuttate_aidudi', name: '5D 1min' },
+          { table: 'bajikattuttate_aidudi_drei', name: '5D 3min' },
+          { table: 'bajikattuttate_aidudi_funf', name: '5D 5min' },
+          { table: 'bajikattuttate_aidudi_zehn', name: '5D 10min' },
+        ];
+        let totalBetCount = 0, totalBetAmount = 0, totalWinAmount = 0;
+        const recentBets: any[] = [];
+        for (const bt of betTables) {
+          try {
+            const [[r]] = await db.query(
+              `SELECT COUNT(*) as cnt, COALESCE(SUM(ketebida),0) as tb, COALESCE(SUM(CASE WHEN phalaphala='gagner' THEN sesabida ELSE 0 END),0) as tw
+               FROM \`${bt.table}\` WHERE byabaharkarta = ?`, [uid]
+            );
+            totalBetCount += Number(r.cnt);
+            totalBetAmount += Number(r.tb);
+            totalWinAmount += Number(r.tw);
+            // Recent bets from this table
+            const [bets] = await db.query(
+              `SELECT kalaparichaya as period_id, ketebida as bet_amount, sesabida as win_amount, phalaphala as result, tiarikala as date, '${bt.name}' as game_name
+               FROM \`${bt.table}\` WHERE byabaharkarta = ? ORDER BY shonu DESC LIMIT 5`, [uid]
+            );
+            recentBets.push(...(bets as any[]));
+          } catch (_) {}
+        }
+        // Sort recent bets by date desc
+        recentBets.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+        result = {
+          deposits,
+          withdrawals,
+          betStats: { totalBetCount, totalBetAmount, totalWinAmount },
+          recentBets: recentBets.slice(0, 30),
+        };
+        break;
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`);
     }
