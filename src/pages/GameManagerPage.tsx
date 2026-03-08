@@ -108,8 +108,8 @@ export default function GameManagerPage() {
                       )}
                     </td>
                     <td className="text-center text-muted-foreground">{p.big_small || "—"}</td>
-                    <td className="text-right font-semibold text-white">₹{Number(p.total_bet).toLocaleString("en-IN")}</td>
-                    <td className="text-right font-medium" style={{ color: 'hsl(38, 92%, 55%)' }}>₹{Number(p.total_win).toLocaleString("en-IN")}</td>
+                    <td className="text-right font-semibold text-foreground">₹{Number(p.total_bet).toLocaleString("en-IN")}</td>
+                    <td className="text-right font-medium text-warning">₹{Number(p.total_win).toLocaleString("en-IN")}</td>
                     <td className="text-center text-muted-foreground">{p.users_count}</td>
                   </motion.tr>
                 ))}

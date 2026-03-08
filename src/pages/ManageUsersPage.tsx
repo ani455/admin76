@@ -106,12 +106,12 @@ export default function ManageUsersPage() {
                       animate={{ opacity: 1 }}
                       transition={{ delay: i * 0.015 }}
                     >
-                      <td className="font-mono font-semibold text-white">{user.mobile}</td>
+                      <td className="font-mono font-semibold text-foreground">{user.mobile}</td>
                       <td className="text-muted-foreground">{user.referral_code || "—"}</td>
                       <td className="font-mono text-muted-foreground">{user.ip_address || "—"}</td>
                       <td className="font-mono text-muted-foreground">{user.id.slice(0, 8)}</td>
-                      <td className="text-right font-bold text-white">₹{Number(user.balance).toLocaleString("en-IN")}</td>
-                      <td className="text-right font-medium" style={{ color: 'hsl(142, 71%, 50%)' }}>₹{Number(user.total_recharge).toLocaleString("en-IN")}</td>
+                      <td className="text-right font-bold text-foreground">₹{Number(user.balance).toLocaleString("en-IN")}</td>
+                      <td className="text-right font-medium text-success">₹{Number(user.total_recharge).toLocaleString("en-IN")}</td>
                       <td className="text-muted-foreground">{new Date(user.created_at).toLocaleDateString("en-IN")}</td>
                       <td className="text-center">
                         <div className="flex items-center justify-center gap-1.5">
