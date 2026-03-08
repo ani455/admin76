@@ -338,12 +338,10 @@ serve(async (req) => {
         break;
       }
 
-      // ===== GAME PERIODS (Wingo 1min example) =====
+      // ===== GAME PERIODS =====
       case "get_game_periods": {
         const { game_type, duration } = params;
-        
-        // Map game_type + duration to the correct period table
-        let periodTable = "gelluonduhogu"; // default: wingo 1min
+        let periodTable = "gelluonduhogu";
         if (game_type === "wingo") {
           if (duration === "3min") periodTable = "gelluonduhogu_drei";
           else if (duration === "5min") periodTable = "gelluonduhogu_funf";
@@ -359,12 +357,8 @@ serve(async (req) => {
           else if (duration === "5min") periodTable = "gelluonduhogu_aidudi_funf";
           else if (duration === "10min") periodTable = "gelluonduhogu_aidudi_zehn";
         }
-
         try {
-          const [rows] = await db.query(
-            `SELECT * FROM \`${periodTable}\` ORDER BY kramasankhye DESC LIMIT 50`
-          );
-          // Map to frontend expected format
+          const [rows] = await db.query(`SELECT * FROM \`${periodTable}\` ORDER BY kramasankhye DESC LIMIT 50`);
           result = (rows as any[]).map((r: any) => ({
             id: r.kramasankhye || r.shonu || r.id,
             period_number: r.atadaaidi || r.period_number || "",
@@ -375,9 +369,328 @@ serve(async (req) => {
             total_win: r.total_win || 0,
             users_count: r.users_count || 0,
           }));
-        } catch (_) {
-          result = [];
+        } catch (_) { result = []; }
+        break;
+      }
+
+      // ===== WITHDRAW SENT (approved) =====
+      case "get_withdraw_sent": {
+        const [rows] = await db.query(
+          `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
+                  w.dharavahi as order_id, w.dinankavannuracisi as created_at,
+                  u.mobile as user_mobile,
+                  bc.name as bank_name, bc.account as account_no,
+                  k.kod as ifsc, w.tike as remark
+           FROM hintegedukolli w
+           LEFT JOIN shonu_subjects u ON u.id = w.balakedara
+           LEFT JOIN bankcard bc ON bc.id = w.khateshonu
+           LEFT JOIN khate k ON k.shonu = w.khateshonu
+           WHERE w.sthiti = '1' ORDER BY w.shonu DESC LIMIT 100`
+        );
+        result = rows;
+        break;
+      }
+
+      // ===== WITHDRAW REJECTED =====
+      case "get_withdraw_rejected": {
+        const [rows] = await db.query(
+          `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
+                  w.dharavahi as order_id, w.dinankavannuracisi as created_at,
+                  u.mobile as user_mobile,
+                  bc.name as bank_name, bc.account as account_no,
+                  k.kod as ifsc, w.tike as remark
+           FROM hintegedukolli w
+           LEFT JOIN shonu_subjects u ON u.id = w.balakedara
+           LEFT JOIN bankcard bc ON bc.id = w.khateshonu
+           LEFT JOIN khate k ON k.shonu = w.khateshonu
+           WHERE w.sthiti = '2' ORDER BY w.shonu DESC LIMIT 100`
+        );
+        result = rows;
+        break;
+      }
+
+      // ===== GIFT CODES =====
+      case "get_gift_codes": {
+        const [rows] = await db.query(
+          "SELECT enserie as code, utilisateurmax as max_users, prix as price, nombredutilisateurs as used_count, creerunrendezvous as created_at, shonu as status, remark FROM hodike_nirvahaka ORDER BY creerunrendezvous DESC LIMIT 100"
+        );
+        result = rows;
+        break;
+      }
+      case "create_gift_code": {
+        const { count, max_users, price, remark } = params;
+        const codes: string[] = [];
+        const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (let i = 0; i < Math.min(count || 1, 50); i++) {
+          let code = "";
+          for (let j = 0; j < 32; j++) code += chars[Math.floor(Math.random() * chars.length)];
+          codes.push(code);
+          const now = new Date().toISOString().slice(0, 16).replace("T", " ");
+          await db.query(
+            "INSERT INTO hodike_nirvahaka (enserie, utilisateurmax, prix, nombredutilisateurs, creerunrendezvous, shonu, remark) VALUES (?, ?, ?, 0, ?, '1', ?)",
+            [code, max_users || 1, price || 0, now, remark || ""]
+          );
         }
+        result = { codes };
+        break;
+      }
+      case "delete_gift_code": {
+        await db.query("DELETE FROM hodike_nirvahaka WHERE enserie = ?", [params.code]);
+        result = { success: true };
+        break;
+      }
+
+      // ===== BONUS / USER DEPOSIT MANAGE =====
+      case "add_user_balance": {
+        const { userId, amount } = params;
+        const [[wallet]] = await db.query("SELECT motta FROM shonu_kaichila WHERE balakedara = ?", [userId]);
+        if (!wallet) {
+          await db.query("INSERT INTO shonu_kaichila (balakedara, motta) VALUES (?, ?)", [userId, amount]);
+        } else {
+          await db.query("UPDATE shonu_kaichila SET motta = ROUND((motta + ?), 2) WHERE balakedara = ?", [Number(amount), userId]);
+        }
+        result = { success: true };
+        break;
+      }
+      case "deduct_user_balance": {
+        const { userId, amount } = params;
+        await db.query("UPDATE shonu_kaichila SET motta = ROUND(GREATEST(motta - ?, 0), 2) WHERE balakedara = ?", [Number(amount), userId]);
+        result = { success: true };
+        break;
+      }
+
+      // ===== BANNED USERS =====
+      case "get_banned_users": {
+        const [rows] = await db.query(
+          `SELECT s.id, s.mobile, s.ip as ip_address, s.createdate as created_at, s.account_frozen,
+                  COALESCE(sk.motta, 0) as balance
+           FROM shonu_subjects s
+           LEFT JOIN shonu_kaichila sk ON sk.balakedara = s.id
+           WHERE s.account_frozen = 1 AND s.id NOT IN ${DEMO_EXCLUDE}
+           ORDER BY s.id DESC`
+        );
+        result = rows;
+        break;
+      }
+
+      // ===== CHECK SAME IP =====
+      case "check_same_ip": {
+        const { ip } = params;
+        let query = `SELECT s.ip as ip_address, COUNT(*) as user_count, GROUP_CONCAT(s.id) as user_ids, GROUP_CONCAT(s.mobile) as mobiles
+                     FROM shonu_subjects s WHERE s.id NOT IN ${DEMO_EXCLUDE} AND s.status = 1`;
+        const qp: any[] = [];
+        if (ip) {
+          query += " AND s.ip = ?";
+          qp.push(ip);
+        }
+        query += " GROUP BY s.ip HAVING COUNT(*) > 1 ORDER BY user_count DESC LIMIT 50";
+        const [rows] = await db.query(query, qp);
+        result = rows;
+        break;
+      }
+
+      // ===== USERS QUERY =====
+      case "user_query": {
+        const { userId } = params;
+        const [[user]] = await db.query(
+          `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, s.ip as ip_address, s.status, s.createdate as created_at, s.account_frozen,
+                  COALESCE(sk.motta, 0) as balance,
+                  (SELECT COALESCE(SUM(motta), 0) FROM thevani WHERE balakedara = s.id AND sthiti='1') as total_recharge,
+                  (SELECT COALESCE(SUM(motta), 0) FROM hintegedukolli WHERE balakedara = s.id AND sthiti='1') as total_withdraw,
+                  (SELECT name FROM bankcard WHERE userid = s.id ORDER BY id ASC LIMIT 1) as name
+           FROM shonu_subjects s
+           LEFT JOIN shonu_kaichila sk ON sk.balakedara = s.id
+           WHERE s.id = ? OR s.mobile = ?`,
+          [userId, userId]
+        );
+        if (!user) throw new Error("User not found");
+
+        // Get bank details
+        const [banks] = await db.query("SELECT * FROM bankcard WHERE userid = ?", [user.id]);
+
+        // Get referrals
+        const [referrals] = await db.query(
+          `SELECT id, mobile, createdate FROM shonu_subjects WHERE code = ? LIMIT 20`,
+          [user.owncode]
+        );
+
+        result = { user, banks, referrals };
+        break;
+      }
+
+      // ===== DEMO USER =====
+      case "get_demo_users": {
+        const [rows] = await db.query(
+          `SELECT d.balakedara as user_id, d.motta as mobile, d.dinankavannuracisi as created_at, d.sthiti as status,
+                  COALESCE(sk.motta, 0) as balance
+           FROM demo d
+           LEFT JOIN shonu_kaichila sk ON sk.balakedara = d.balakedara
+           WHERE d.sthiti = '1'
+           ORDER BY d.dinankavannuracisi DESC`
+        );
+        result = rows;
+        break;
+      }
+      case "add_demo_user": {
+        const { mobile, password } = params;
+        // Check duplicate
+        const [[existing]] = await db.query("SELECT id FROM shonu_subjects WHERE mobile = ?", [mobile]);
+        if (existing) throw new Error("Duplicate mobile number");
+
+        const owncode = String(Math.floor(100000000000 + Math.random() * 900000000000));
+        const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+        const [insertResult]: any = await db.query(
+          "INSERT INTO shonu_subjects (mobile, email, password, code, owncode, privacy, status, createdate, ip, pwd) VALUES (?, '', MD5(?), '255860337165', ?, 'on', '1', ?, '127.0.0.1', ?)",
+          [mobile, password, owncode, now, password]
+        );
+        const lastId = insertResult.insertId;
+        await db.query("INSERT INTO shonu_kaichila (balakedara, motta, dinankavannuracisi) VALUES (?, '5000', ?)", [lastId, now]);
+        await db.query("INSERT INTO demo (balakedara, motta, dinankavannuracisi, sthiti) VALUES (?, ?, ?, '1')", [lastId, mobile, now]);
+        result = { success: true, userId: lastId };
+        break;
+      }
+      case "remove_demo_user": {
+        await db.query("UPDATE demo SET sthiti = '2' WHERE balakedara = ?", [params.userId]);
+        result = { success: true };
+        break;
+      }
+
+      // ===== AGENT USER =====
+      case "get_agents": {
+        const [rows] = await db.query(
+          `SELECT a.userid, a.mobile, a.createdate as created_at, a.type, a.salary, a.status
+           FROM tb_agent a WHERE a.status = '1' ORDER BY a.createdate DESC`
+        );
+        result = rows;
+        break;
+      }
+      case "add_agent": {
+        const { userId, salary, salaryType } = params;
+        const [[userExists]] = await db.query("SELECT id FROM shonu_subjects WHERE id = ?", [userId]);
+        if (!userExists) throw new Error("User ID doesn't exist");
+        const [[agentExists]] = await db.query("SELECT userid FROM tb_agent WHERE mobile = ? AND status = '1'", [userId]);
+        if (agentExists) throw new Error("Agent already exists");
+        const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+        await db.query(
+          "INSERT INTO tb_agent (userid, mobile, createdate, status, type, salary) VALUES (?, ?, ?, '1', ?, ?)",
+          [userId, userId, now, salaryType, salary]
+        );
+        result = { success: true };
+        break;
+      }
+      case "remove_agent": {
+        await db.query("UPDATE tb_agent SET status = '2' WHERE userid = ?", [params.userId]);
+        result = { success: true };
+        break;
+      }
+
+      // ===== BANK DETAILS MODIFY =====
+      case "get_user_bank_details": {
+        const { userId } = params;
+        const [rows] = await db.query("SELECT id, userid, name, type, account FROM bankcard WHERE userid = ?", [userId]);
+        result = rows;
+        break;
+      }
+      case "update_bank_detail": {
+        const { bankId, name, account } = params;
+        await db.query("UPDATE bankcard SET name = ?, account = ? WHERE id = ?", [name, account, bankId]);
+        result = { success: true };
+        break;
+      }
+
+      // ===== ADMIN PASSWORD =====
+      case "change_admin_password": {
+        const { newPassword } = params;
+        await db.query("UPDATE nirvahaka_shonu SET guptapada = MD5(?) WHERE unohs = '1'", [newPassword]);
+        result = { success: true };
+        break;
+      }
+
+      // ===== SUPPORT - DEPOSIT PROBLEM =====
+      case "get_support_queries": {
+        const { type } = params;
+        let probFilter = "";
+        if (type === "deposit") probFilter = "Deposite Problem";
+        else if (type === "withdrawal") probFilter = "Withdrawal Problem";
+        else if (type === "ifsc") probFilter = "Change IFSC";
+        else if (type === "bank") probFilter = "Change bank name";
+        else if (type === "game") probFilter = "Game Problem";
+
+        const [rows] = await db.query(
+          `SELECT id, userid, deposit_order_no as order_no, bank_account_number as bank_account, ifsc, order_amount as amount, text_content as message, remarks, status, prob as problem_type
+           FROM your_table WHERE prob = ? ORDER BY id DESC LIMIT 100`,
+          [probFilter]
+        );
+        result = rows;
+        break;
+      }
+      case "respond_support": {
+        const { id, remarks } = params;
+        await db.query("UPDATE your_table SET remarks = ?, status = 1 WHERE id = ?", [remarks, id]);
+        result = { success: true };
+        break;
+      }
+
+      // ===== ILLEGAL BETS =====
+      case "get_illegal_bets": {
+        const betTables = [
+          { table: 'bajikattuttate_zehn', name: 'Wingo 30 sec' },
+          { table: 'bajikattuttate', name: 'Wingo 1 min' },
+          { table: 'bajikattuttate_drei', name: 'Wingo 3 min' },
+          { table: 'bajikattuttate_funf', name: 'Wingo 5 min' },
+          { table: 'bajikattuttate_aidudi', name: '5D 1 min' },
+          { table: 'bajikattuttate_aidudi_drei', name: '5D 3 min' },
+          { table: 'bajikattuttate_aidudi_funf', name: '5D 5 min' },
+          { table: 'bajikattuttate_aidudi_zehn', name: '5D 10 min' },
+        ];
+        const allBets: any[] = [];
+        for (const bt of betTables) {
+          try {
+            const [rows] = await db.query(
+              `SELECT byabaharkarta as user_id, kalaparichaya as period_id, '${bt.name}' as game_name FROM \`${bt.table}\``
+            );
+            allBets.push(...(rows as any[]));
+          } catch (_) {}
+        }
+        // Find users who bet on same period from multiple accounts (by grouping period)
+        const periodMap: Record<string, any[]> = {};
+        for (const b of allBets) {
+          const key = `${b.period_id}_${b.game_name}`;
+          if (!periodMap[key]) periodMap[key] = [];
+          periodMap[key].push(b.user_id);
+        }
+        const illegal: any[] = [];
+        for (const [key, users] of Object.entries(periodMap)) {
+          const unique = [...new Set(users)];
+          if (unique.length > 3) {
+            const [period_id, game_name] = key.split("_");
+            illegal.push({ period_id, game_name: key.replace(`${period_id}_`, ""), user_count: unique.length, users: unique.slice(0, 10) });
+          }
+        }
+        result = illegal.slice(0, 50);
+        break;
+      }
+
+      // ===== USDT RATE =====
+      case "get_usdt_rate": {
+        try {
+          const [[row]] = await db.query("SELECT * FROM usdt_settings LIMIT 1");
+          result = row || { rate: 85 };
+        } catch (_) {
+          result = { rate: 85 };
+        }
+        break;
+      }
+      case "update_usdt_rate": {
+        try {
+          await db.query("UPDATE usdt_settings SET rate = ? WHERE id = 1", [params.rate]);
+        } catch (_) {
+          try {
+            await db.query("CREATE TABLE IF NOT EXISTS usdt_settings (id INT PRIMARY KEY, rate DECIMAL(10,2))");
+            await db.query("INSERT INTO usdt_settings (id, rate) VALUES (1, ?) ON DUPLICATE KEY UPDATE rate = ?", [params.rate, params.rate]);
+          } catch (_e) {}
+        }
+        result = { success: true };
         break;
       }
 
