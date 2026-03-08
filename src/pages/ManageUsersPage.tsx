@@ -76,7 +76,7 @@ export default function ManageUsersPage() {
       >
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'hsl(160, 84%, 45%)' }} />
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground text-sm">No users found</div>
