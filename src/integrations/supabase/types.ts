@@ -14,7 +14,377 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_users: {
+        Row: {
+          auth_user_id: string
+          created_at: string
+          d5_access: boolean
+          dashboard_access: boolean
+          finance_access: boolean
+          id: string
+          k3_access: boolean
+          manage_access: boolean
+          support_access: boolean
+          updated_at: string
+          username: string
+          wingo_access: boolean
+        }
+        Insert: {
+          auth_user_id: string
+          created_at?: string
+          d5_access?: boolean
+          dashboard_access?: boolean
+          finance_access?: boolean
+          id?: string
+          k3_access?: boolean
+          manage_access?: boolean
+          support_access?: boolean
+          updated_at?: string
+          username: string
+          wingo_access?: boolean
+        }
+        Update: {
+          auth_user_id?: string
+          created_at?: string
+          d5_access?: boolean
+          dashboard_access?: boolean
+          finance_access?: boolean
+          id?: string
+          k3_access?: boolean
+          manage_access?: boolean
+          support_access?: boolean
+          updated_at?: string
+          username?: string
+          wingo_access?: boolean
+        }
+        Relationships: []
+      }
+      bets: {
+        Row: {
+          amount: number
+          bet_type: string
+          bet_value: string
+          created_at: string
+          id: string
+          period_id: string
+          result: string | null
+          user_id: string
+          win_amount: number | null
+        }
+        Insert: {
+          amount: number
+          bet_type: string
+          bet_value: string
+          created_at?: string
+          id?: string
+          period_id: string
+          result?: string | null
+          user_id: string
+          win_amount?: number | null
+        }
+        Update: {
+          amount?: number
+          bet_type?: string
+          bet_value?: string
+          created_at?: string
+          id?: string
+          period_id?: string
+          result?: string | null
+          user_id?: string
+          win_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bets_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "game_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deposits: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          status: string
+          updated_at: string
+          user_id: string
+          utr: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          utr?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          utr?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_periods: {
+        Row: {
+          big_small: string | null
+          created_at: string
+          duration: string
+          game_type: string
+          id: string
+          period_number: string
+          result_color: string | null
+          result_number: number | null
+          total_bet: number
+          total_win: number
+          users_count: number
+        }
+        Insert: {
+          big_small?: string | null
+          created_at?: string
+          duration: string
+          game_type: string
+          id?: string
+          period_number: string
+          result_color?: string | null
+          result_number?: number | null
+          total_bet?: number
+          total_win?: number
+          users_count?: number
+        }
+        Update: {
+          big_small?: string | null
+          created_at?: string
+          duration?: string
+          game_type?: string
+          id?: string
+          period_number?: string
+          result_color?: string | null
+          result_number?: number | null
+          total_bet?: number
+          total_win?: number
+          users_count?: number
+        }
+        Relationships: []
+      }
+      game_settings: {
+        Row: {
+          game_mode: string
+          id: number
+          process_type: string
+          updated_at: string
+        }
+        Insert: {
+          game_mode?: string
+          id?: number
+          process_type?: string
+          updated_at?: string
+        }
+        Update: {
+          game_mode?: string
+          id?: number
+          process_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gift_codes: {
+        Row: {
+          amount: number
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          max_uses: number
+          used_count: number
+        }
+        Insert: {
+          amount: number
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          used_count?: number
+        }
+        Update: {
+          amount?: number
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          used_count?: number
+        }
+        Relationships: []
+      }
+      support_queries: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          message: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_queries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          ip_address: string | null
+          is_agent: boolean
+          is_demo: boolean
+          mobile: string
+          name: string | null
+          referral_code: string | null
+          referred_by: string | null
+          status: string
+          total_recharge: number
+          total_withdraw: number
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_agent?: boolean
+          is_demo?: boolean
+          mobile: string
+          name?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          status?: string
+          total_recharge?: number
+          total_withdraw?: number
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_agent?: boolean
+          is_demo?: boolean
+          mobile?: string
+          name?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          status?: string
+          total_recharge?: number
+          total_withdraw?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withdrawals: {
+        Row: {
+          account_no: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          id: string
+          ifsc: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_no?: string | null
+          amount: number
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          ifsc?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_no?: string | null
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          ifsc?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
