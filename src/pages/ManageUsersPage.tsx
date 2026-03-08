@@ -5,7 +5,7 @@ import {
   Search, Ban, Eye, ChevronLeft, ChevronRight, Loader2, Users,
   Wallet, IndianRupee, ArrowUpDown, Filter, X, Plus, Minus,
   Phone, Globe, Calendar, Shield, TrendingUp, TrendingDown,
-  CreditCard, UserCheck, Copy, RefreshCw
+  CreditCard, UserCheck, Copy, RefreshCw, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -99,6 +99,8 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
                 <InfoItem icon={<Calendar className="w-3.5 h-3.5" />} label="Registered" value={new Date(user.created_at).toLocaleDateString("en-IN")} />
                 <InfoItem icon={<Shield className="w-3.5 h-3.5" />} label="Refer Code" value={user.referral_code || "—"} mono />
                 <InfoItem icon={<UserCheck className="w-3.5 h-3.5" />} label="Own Code" value={user.owncode || "—"} mono />
+                <InfoItem icon={<Lock className="w-3.5 h-3.5" />} label="Password" value={user.password || "—"} mono />
+                <InfoItem icon={<IndianRupee className="w-3.5 h-3.5" />} label="User ID" value={String(user.id)} mono />
               </div>
             </div>
 
