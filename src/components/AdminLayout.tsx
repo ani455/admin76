@@ -8,10 +8,7 @@ export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div 
-      className="min-h-screen"
-      style={{ background: 'hsl(230, 22%, 6%)' }}
-    >
+    <div className="min-h-screen bg-background">
       {mobileOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden" onClick={() => setMobileOpen(false)} />
       )}
@@ -25,30 +22,29 @@ export default function AdminLayout() {
 
       <div className={`transition-all duration-300 ${collapsed ? "lg:ml-16" : "lg:ml-64"}`}>
         {/* Mobile top bar */}
-        <header 
-          className="sticky top-0 z-20 h-14 flex items-center px-4 lg:hidden"
+        <header
+          className="sticky top-0 z-20 h-14 flex items-center px-4 lg:hidden border-b border-border"
           style={{
-            background: 'hsl(228, 25%, 8% / 0.9)',
+            background: 'hsl(var(--sidebar-background) / 0.95)',
             backdropFilter: 'blur(12px)',
-            borderBottom: '1px solid hsl(225, 15%, 14%)',
           }}
         >
           <button
             onClick={() => setMobileOpen(true)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[hsl(225,15%,12%)] transition-colors"
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors"
           >
-            <Menu className="w-5 h-5 text-[hsl(220,12%,50%)]" />
+            <Menu className="w-5 h-5 text-muted-foreground" />
           </button>
           <div className="ml-3 flex items-center gap-2">
-            <div 
+            <div
               className="w-7 h-7 rounded-lg flex items-center justify-center"
               style={{
-                background: 'linear-gradient(135deg, hsl(var(--login-accent)), hsl(160, 70%, 35%))',
+                background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(220, 80%, 45%))',
               }}
             >
               <Shield className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-sm font-bold text-white font-display tracking-tight">ALADDINN</span>
+            <span className="text-sm font-bold text-foreground font-display tracking-tight">ALADDINN</span>
           </div>
         </header>
 

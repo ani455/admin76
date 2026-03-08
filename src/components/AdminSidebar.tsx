@@ -124,36 +124,36 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         collapsed ? "w-16" : "w-64"
       }`}
       style={{
-        background: 'linear-gradient(180deg, hsl(228, 25%, 8%) 0%, hsl(230, 22%, 6%) 100%)',
-        borderRight: '1px solid hsl(225, 15%, 14%)',
+        background: 'linear-gradient(180deg, hsl(var(--sidebar-background)) 0%, hsl(225, 20%, 10%) 100%)',
+        borderRight: '1px solid hsl(var(--sidebar-border))',
       }}
     >
       {/* Sidebar glow accent */}
-      <div 
-        className="absolute top-0 left-0 right-0 h-32 pointer-events-none opacity-30"
+      <div
+        className="absolute top-0 left-0 right-0 h-32 pointer-events-none opacity-20"
         style={{
-          background: 'radial-gradient(ellipse at 50% -20%, hsl(var(--login-accent) / 0.15), transparent 70%)',
+          background: 'radial-gradient(ellipse at 50% -20%, hsl(var(--primary) / 0.2), transparent 70%)',
         }}
       />
 
       {/* Logo */}
-      <div className="relative flex items-center h-16 px-3 border-b border-[hsl(225,15%,14%)]">
+      <div className="relative flex items-center h-16 px-3 border-b border-sidebar-border">
         {!collapsed && (
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div 
+            <div
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
-                background: 'linear-gradient(135deg, hsl(var(--login-accent)), hsl(160, 70%, 35%))',
-                boxShadow: '0 0 20px hsl(var(--login-accent-glow) / 0.25)',
+                background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(220, 80%, 45%))',
+                boxShadow: '0 0 20px hsl(var(--primary) / 0.25)',
               }}
             >
               <Shield className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="text-[14px] font-bold text-white truncate leading-tight font-display tracking-tight">
+              <p className="text-[14px] font-bold text-foreground truncate leading-tight font-display tracking-tight">
                 ALADDINN
               </p>
-              <p className="text-[10px] text-[hsl(220,12%,40%)] font-medium leading-tight font-mono">
+              <p className="text-[10px] text-muted-foreground font-medium leading-tight font-mono">
                 Admin v2.0
               </p>
             </div>
@@ -161,7 +161,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         )}
         <button
           onClick={onToggle}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[hsl(220,12%,40%)] hover:text-white hover:bg-[hsl(225,15%,14%)] transition-all duration-200 flex-shrink-0"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200 flex-shrink-0"
         >
           <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`} />
         </button>
@@ -174,19 +174,19 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
           to="/"
           className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 mb-1 ${
             isActive("/")
-              ? "text-white"
-              : "text-[hsl(220,12%,50%)] hover:text-white hover:bg-[hsl(225,15%,12%)]"
+              ? "text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-secondary"
           }`}
           style={isActive("/") ? {
-            background: 'linear-gradient(135deg, hsl(var(--login-accent) / 0.15), hsl(var(--login-accent) / 0.05))',
-            boxShadow: '0 0 0 1px hsl(var(--login-accent) / 0.2), 0 0 12px hsl(var(--login-accent) / 0.05)',
+            background: 'linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.08))',
+            boxShadow: '0 0 0 1px hsl(var(--primary) / 0.25), 0 0 12px hsl(var(--primary) / 0.08)',
           } : {}}
         >
           <LayoutDashboard className="w-[18px] h-[18px] flex-shrink-0" />
-          {!collapsed && <span className="font-display">Dashboard</span>}
+          {!collapsed && <span className="font-display">{isActive("/") ? <span className="text-primary">Dashboard</span> : "Dashboard"}</span>}
           {isActive("/") && !collapsed && (
-            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[hsl(var(--login-accent))]" 
-              style={{ boxShadow: '0 0 6px hsl(var(--login-accent-glow))' }} 
+            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
+              style={{ boxShadow: '0 0 6px hsl(var(--primary))' }}
             />
           )}
         </Link>
@@ -202,8 +202,8 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                 onClick={() => !collapsed && toggleGroup(group.title)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
                   hasActive
-                    ? "text-white bg-[hsl(225,15%,12%)]"
-                    : "text-[hsl(220,12%,50%)] hover:text-white hover:bg-[hsl(225,15%,12%)]"
+                    ? "text-foreground bg-secondary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
                 <group.icon className="w-[18px] h-[18px] flex-shrink-0" />
@@ -216,23 +216,23 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
               </button>
 
               {!collapsed && isOpen && (
-                <div className="ml-[22px] pl-3 border-l border-[hsl(225,15%,14%)] mt-1 mb-1.5 space-y-0.5">
+                <div className="ml-[22px] pl-3 border-l border-border mt-1 mb-1.5 space-y-0.5">
                   {group.items.map((item) => (
                     <Link
                       key={item.path}
                       to={item.path}
                       className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[12px] transition-all duration-200 ${
                         isActive(item.path)
-                          ? "text-[hsl(var(--login-accent))] font-semibold bg-[hsl(var(--login-accent)/0.08)]"
-                          : "text-[hsl(220,12%,40%)] hover:text-[hsl(220,12%,65%)] hover:bg-[hsl(225,15%,10%)]"
+                          ? "text-primary font-semibold bg-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200 ${
-                        isActive(item.path) 
-                          ? "bg-[hsl(var(--login-accent))]" 
-                          : "bg-[hsl(220,12%,20%)]"
-                      }`} 
-                        style={isActive(item.path) ? { boxShadow: '0 0 6px hsl(var(--login-accent-glow))' } : {}}
+                        isActive(item.path)
+                          ? "bg-primary"
+                          : "bg-muted-foreground/30"
+                      }`}
+                        style={isActive(item.path) ? { boxShadow: '0 0 6px hsl(var(--primary))' } : {}}
                       />
                       <span className="truncate">{item.title}</span>
                     </Link>
@@ -245,10 +245,10 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
       </nav>
 
       {/* Logout */}
-      <div className="px-2.5 py-3 border-t border-[hsl(225,15%,14%)]">
+      <div className="px-2.5 py-3 border-t border-sidebar-border">
         <button
           onClick={() => signOut()}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[hsl(0,60%,55%)] hover:bg-[hsl(0,60%,55%,0.08)] transition-all duration-200"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-all duration-200"
         >
           <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
           {!collapsed && <span className="font-display">Logout</span>}
