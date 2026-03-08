@@ -11,7 +11,7 @@ let pool: any = null;
 
 function getPool() {
   if (!pool) {
-    pool = createClient({
+    pool = mysql.createConnection({
       host: Deno.env.get("REMOTE_DB_HOST"),
       user: Deno.env.get("REMOTE_DB_USER"),
       database: Deno.env.get("REMOTE_DB_NAME"),
