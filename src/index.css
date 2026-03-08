@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -50,6 +50,14 @@
     --sidebar-accent-foreground: 213 31% 91%;
     --sidebar-border: 217 33% 17%;
     --sidebar-ring: 225 73% 57%;
+
+    --login-bg: 230 25% 5%;
+    --login-card: 228 20% 10%;
+    --login-border: 225 15% 18%;
+    --login-input-bg: 230 22% 7%;
+    --login-muted: 220 12% 40%;
+    --login-accent: 160 84% 39%;
+    --login-accent-glow: 160 84% 39%;
   }
 
   .dark {
@@ -81,8 +89,39 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
   }
+}
+
+/* Login page animations */
+@keyframes loginGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes borderRotate {
+  0% { --angle: 0deg; }
+  100% { --angle: 360deg; }
+}
+
+.login-float-in {
+  animation: floatUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.login-shimmer-btn {
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
 }
 
 /* Scrollbar */
