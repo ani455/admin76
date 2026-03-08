@@ -1,50 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Gamepad2,
-  Dice3,
-  Dice5,
-  Wallet,
-  HeadphonesIcon,
-  Settings2,
-  Users,
-  ChevronDown,
-  ChevronLeft,
-  LogOut,
-  Gift,
-  UserCheck,
-  UserX,
-  Shield,
-  CreditCard,
-  Building2,
-  HelpCircle,
-  ArrowDownUp,
-  ArrowUpDown,
-  Ban,
-  KeyRound,
-  Wifi,
-  MessageSquare,
-  DollarSign,
-  UserPlus,
-  Bot,
-  Link2,
-  FileText,
-  MinusCircle,
-  ScrollText,
+  LayoutDashboard, Gamepad2, Dice3, Dice5, Wallet,
+  HeadphonesIcon, Settings2, Users, ChevronDown, ChevronLeft,
+  LogOut, Gift, UserCheck, UserX, Shield, CreditCard,
+  Building2, HelpCircle, ArrowDownUp, ArrowUpDown, Ban,
+  KeyRound, Wifi, MessageSquare, DollarSign, UserPlus,
+  Bot, Link2, FileText, MinusCircle, ScrollText,
 } from "lucide-react";
 
-interface MenuItem {
-  title: string;
-  path: string;
-  icon: React.ElementType;
-}
-
-interface MenuGroup {
-  title: string;
-  icon: React.ElementType;
-  items: MenuItem[];
-}
+interface MenuItem { title: string; path: string; icon: React.ElementType; }
+interface MenuGroup { title: string; icon: React.ElementType; items: MenuItem[]; }
 
 const menuGroups: MenuGroup[] = [
   {
@@ -143,170 +109,97 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
     return active ? [active.title] : [];
   });
 
-  const toggleGroup = (title: string) => {
+  const toggleGroup = (title: string) =>
     setOpenGroups((prev) =>
       prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
     );
-  };
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen z-40 flex flex-col transition-all duration-300 ease-in-out ${
-        collapsed ? "w-[68px]" : "w-[260px]"
+      className={`fixed left-0 top-0 h-screen z-40 flex flex-col bg-sidebar transition-all duration-200 ${
+        collapsed ? "w-16" : "w-60"
       }`}
-      style={{ background: "hsl(var(--sidebar-bg))" }}
     >
-      {/* Header */}
-      <div
-        className="flex items-center justify-between h-16 px-4 border-b"
-        style={{
-          background: "hsl(var(--sidebar-header))",
-          borderColor: "hsl(var(--sidebar-border))",
-        }}
-      >
+      {/* Logo */}
+      <div className="flex items-center h-14 px-3 border-b border-sidebar-border">
         {!collapsed && (
-          <div className="flex items-center gap-3 animate-fade-in-left">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, hsl(var(--stat-blue)), hsl(var(--stat-purple)))" }}>
-              <Gamepad2 className="w-5 h-5" style={{ color: "hsl(var(--sidebar-active-fg))" }} />
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
+              <Gamepad2 className="w-4 h-4 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="text-sm font-bold tracking-wide" style={{ color: "hsl(var(--sidebar-active-fg))" }}>
-                ALADDINN GAME
-              </h1>
-              <p className="text-[10px] font-medium tracking-widest uppercase" style={{ color: "hsl(var(--sidebar-fg))" }}>
-                Admin Panel
-              </p>
+            <div className="min-w-0">
+              <p className="text-[13px] font-bold text-white truncate leading-tight">ALADDINN</p>
+              <p className="text-[10px] text-sidebar-foreground/60 font-medium leading-tight">Admin Panel</p>
             </div>
           </div>
         )}
         <button
           onClick={onToggle}
-          className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
-          style={{ background: "hsl(var(--sidebar-hover))", color: "hsl(var(--sidebar-fg))" }}
+          className="w-7 h-7 rounded flex items-center justify-center text-sidebar-foreground/60 hover:text-white hover:bg-sidebar-accent transition-colors flex-shrink-0"
         >
-          <ChevronLeft
-            className={`w-4 h-4 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
-          />
+          <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? "rotate-180" : ""}`} />
         </button>
       </div>
 
-      {/* Profile */}
-      {!collapsed && (
-        <div className="px-4 py-4 border-b animate-fade-in" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br flex items-center justify-center text-sm font-bold"
-              style={{ background: "linear-gradient(135deg, hsl(var(--stat-blue)), hsl(var(--stat-teal)))", color: "white" }}>
-              GA
-            </div>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: "hsl(var(--sidebar-active-fg))" }}>Game Admin</p>
-              <p className="text-xs" style={{ color: "hsl(var(--sidebar-fg))" }}>Super Admin</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2">
-        {/* Dashboard */}
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto sidebar-nav py-2 px-2">
+        {/* Dashboard link */}
         <Link
           to="/"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 transition-all duration-200 group ${
+          className={`flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] font-medium transition-colors mb-0.5 ${
             isActive("/")
-              ? "shadow-lg"
-              : ""
+              ? "bg-primary text-white"
+              : "text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent"
           }`}
-          style={{
-            background: isActive("/") ? "hsl(var(--sidebar-active))" : "transparent",
-            color: isActive("/") ? "hsl(var(--sidebar-active-fg))" : "hsl(var(--sidebar-fg))",
-          }}
-          onMouseEnter={(e) => {
-            if (!isActive("/")) e.currentTarget.style.background = "hsl(var(--sidebar-hover))";
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/")) e.currentTarget.style.background = "transparent";
-          }}
         >
-          <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span className="text-sm font-medium">Dashboard</span>}
+          <LayoutDashboard className="w-[18px] h-[18px] flex-shrink-0" />
+          {!collapsed && <span>Dashboard</span>}
         </Link>
 
-        {/* Menu Groups */}
+        {/* Groups */}
         {menuGroups.map((group) => {
           const isOpen = openGroups.includes(group.title);
           const hasActive = group.items.some((i) => isActive(i.path));
 
           return (
-            <div key={group.title} className="mb-0.5">
+            <div key={group.title} className="mt-0.5">
               <button
                 onClick={() => !collapsed && toggleGroup(group.title)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200"
-                style={{
-                  color: hasActive ? "hsl(var(--sidebar-active-fg))" : "hsl(var(--sidebar-fg))",
-                  background: hasActive && !isOpen ? "hsl(var(--sidebar-hover))" : "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "hsl(var(--sidebar-hover))";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = hasActive && !isOpen ? "hsl(var(--sidebar-hover))" : "transparent";
-                }}
+                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] font-medium transition-colors ${
+                  hasActive
+                    ? "text-white bg-sidebar-accent"
+                    : "text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent"
+                }`}
               >
-                <group.icon className="w-5 h-5 flex-shrink-0" />
+                <group.icon className="w-[18px] h-[18px] flex-shrink-0" />
                 {!collapsed && (
                   <>
-                    <span className="text-sm font-medium flex-1 text-left">{group.title}</span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-                    />
+                    <span className="flex-1 text-left truncate">{group.title}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
                   </>
                 )}
               </button>
 
-              {/* Sub items */}
-              {!collapsed && (
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="ml-4 pl-4 border-l py-1" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
-                    {group.items.map((item) => (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-all duration-200"
-                        style={{
-                          background: isActive(item.path) ? "hsl(var(--sidebar-active) / 0.15)" : "transparent",
-                          color: isActive(item.path) ? "hsl(var(--sidebar-active))" : "hsl(var(--sidebar-fg))",
-                          fontWeight: isActive(item.path) ? 600 : 400,
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isActive(item.path)) {
-                            e.currentTarget.style.background = "hsl(var(--sidebar-hover))";
-                            e.currentTarget.style.color = "hsl(var(--sidebar-active-fg))";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive(item.path)) {
-                            e.currentTarget.style.background = "transparent";
-                            e.currentTarget.style.color = "hsl(var(--sidebar-fg))";
-                          }
-                        }}
-                      >
-                        <div
-                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                          style={{
-                            background: isActive(item.path) ? "hsl(var(--sidebar-active))" : "hsl(var(--sidebar-fg) / 0.3)",
-                          }}
-                        />
-                        {item.title}
-                      </Link>
-                    ))}
-                  </div>
+              {!collapsed && isOpen && (
+                <div className="ml-[18px] pl-3 border-l border-sidebar-border/50 mt-0.5 mb-1">
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded text-[12px] transition-colors ${
+                        isActive(item.path)
+                          ? "text-primary font-semibold bg-primary/10"
+                          : "text-sidebar-foreground/50 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/50"
+                      }`}
+                    >
+                      <span className={`w-1 h-1 rounded-full flex-shrink-0 ${
+                        isActive(item.path) ? "bg-primary" : "bg-sidebar-foreground/20"
+                      }`} />
+                      <span className="truncate">{item.title}</span>
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -314,20 +207,11 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-3 py-3 border-t" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
-        <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200"
-          style={{ color: "hsl(var(--stat-red))" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "hsl(var(--stat-red) / 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span className="text-sm font-medium">Logout</span>}
+      {/* Logout */}
+      <div className="px-2 py-2 border-t border-sidebar-border">
+        <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] font-medium text-red-400 hover:bg-red-500/10 transition-colors">
+          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+          {!collapsed && <span>Logout</span>}
         </button>
       </div>
     </aside>
