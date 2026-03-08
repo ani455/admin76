@@ -46,10 +46,10 @@ export default function ManageUsersPage() {
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
-            background: 'hsl(210, 100%, 55% / 0.12)',
-            border: '1px solid hsl(210, 100%, 55% / 0.15)',
+            background: 'hsl(220, 90%, 56% / 0.12)',
+            border: '1px solid hsl(220, 90%, 56% / 0.15)',
           }}>
-            <Users className="w-5 h-5" style={{ color: 'hsl(210, 100%, 60%)' }} />
+            <Users className="w-5 h-5 text-primary" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white font-display">Manage Users</h2>
