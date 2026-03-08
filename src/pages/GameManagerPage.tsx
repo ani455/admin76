@@ -74,6 +74,12 @@ export default function GameManagerPage() {
     refetchInterval: 2000,
   });
 
+  const { data: currentPrediction } = useQuery({
+    queryKey: ["current-prediction", gameTypeDb, duration],
+    queryFn: () => remoteDb("get_current_prediction", { game_type: gameTypeDb, duration }),
+    refetchInterval: 3000,
+  });
+
   // Set prediction mutation
   const setPredictionMutation = useMutation({
     mutationFn: () => remoteDb("set_game_result", {
@@ -126,8 +132,8 @@ export default function GameManagerPage() {
         </div>
       </motion.div>
 
-      {/* Top Row: Countdown + Period ID + Total Bet */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Top Row: Countdown + Period ID + Prediction + Total Bet */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           className="glass-card-solid rounded-xl p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-destructive/10 flex items-center justify-center">
@@ -147,6 +153,19 @@ export default function GameManagerPage() {
           <div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Period ID</p>
             <p className="text-sm font-mono font-bold text-foreground">{periods?.[0]?.period_number || "—"}</p>
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }}
+          className="glass-card-solid rounded-xl p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-success" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Next Prediction</p>
+            <p className="text-lg font-bold" style={{ color: currentPrediction ? getNumberColor(currentPrediction.sankhye) : undefined }}>
+              {currentPrediction ? currentPrediction.sankhye : "NOT SET"}
+            </p>
           </div>
         </motion.div>
 

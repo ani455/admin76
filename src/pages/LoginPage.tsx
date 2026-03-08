@@ -1,10 +1,106 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTheme } from "@/hooks/useTheme";
+
+// Animated node/network background
+function NodeBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationId: number;
+    const nodes: { x: number; y: number; vx: number; vy: number; r: number }[] = [];
+    const nodeCount = 60;
+    const maxDist = 150;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const w = () => canvas.offsetWidth;
+    const h = () => canvas.offsetHeight;
+
+    for (let i = 0; i < nodeCount; i++) {
+      nodes.push({
+        x: Math.random() * w(),
+        y: Math.random() * h(),
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: 2 + Math.random() * 2,
+      });
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, w(), h());
+      const isDark = theme === "dark";
+      const nodeColor = isDark ? "rgba(100, 150, 255, 0.5)" : "rgba(50, 100, 220, 0.3)";
+      const lineColor = isDark ? "rgba(100, 150, 255," : "rgba(50, 100, 220,";
+
+      for (const node of nodes) {
+        node.x += node.vx;
+        node.y += node.vy;
+        if (node.x < 0 || node.x > w()) node.vx *= -1;
+        if (node.y < 0 || node.y > h()) node.vy *= -1;
+      }
+
+      // Draw lines
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < maxDist) {
+            const opacity = (1 - dist / maxDist) * 0.15;
+            ctx.beginPath();
+            ctx.strokeStyle = `${lineColor}${opacity})`;
+            ctx.lineWidth = 1;
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw nodes
+      for (const node of nodes) {
+        ctx.beginPath();
+        ctx.fillStyle = nodeColor;
+        ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      animationId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resize);
+    };
+  }, [theme]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 0.6 }}
+    />
+  );
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -43,15 +139,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-background relative overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.02]" style={{
-        backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)',
-        backgroundSize: '32px 32px',
-      }} />
+      {/* Animated Node Background - covers entire page */}
+      <NodeBackground />
 
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden items-center justify-center bg-primary">
-        {/* Decorative shapes */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden items-center justify-center">
+        {/* Blue overlay on left */}
+        <div className="absolute inset-0 bg-primary/90" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute w-[600px] h-[600px] rounded-full blur-[120px] opacity-20"
             style={{ background: 'hsl(0 0% 100%)', top: '-20%', left: '-10%' }} />
@@ -169,7 +263,7 @@ export default function LoginPage() {
                   onBlur={() => setFocused(null)}
                   placeholder="admin@aladdinn.com"
                   required
-                  className="w-full h-[52px] rounded-xl bg-secondary border border-border pl-12 pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
+                  className="w-full h-[52px] rounded-xl bg-card border border-border pl-12 pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
                 />
               </div>
             </motion.div>
@@ -195,7 +289,7 @@ export default function LoginPage() {
                   onBlur={() => setFocused(null)}
                   placeholder="Enter your password"
                   required
-                  className="w-full h-[52px] rounded-xl bg-secondary border border-border pl-12 pr-12 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
+                  className="w-full h-[52px] rounded-xl bg-card border border-border pl-12 pr-12 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
                 />
                 <button
                   type="button"
