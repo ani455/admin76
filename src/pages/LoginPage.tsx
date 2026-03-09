@@ -171,7 +171,7 @@ export default function LoginPage() {
               <Shield className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white tracking-tight font-display">ALADDINN</h2>
+              <h2 className="text-3xl font-black text-white tracking-tight italic" style={{ fontFamily: "'Playfair Display', serif" }}>Rivestro</h2>
               <p className="text-xs text-white/60 font-medium font-mono">Control Panel v2.0</p>
             </div>
           </motion.div>
