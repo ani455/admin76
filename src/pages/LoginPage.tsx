@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { remoteDb } from "@/lib/remoteDb";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Eye, EyeOff, Lock, User, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
@@ -104,7 +104,7 @@ function NodeBackground() {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signIn } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -120,13 +120,16 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Use username as email for Supabase auth
-    const email = username.includes('@') ? username : `${username}@rivestro.admin`;
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error("Login failed: " + error.message);
-    } else {
-      navigate("/", { replace: true });
+    try {
+      const data = await remoteDb("admin_login", { username, password });
+      if (data?.success && data?.admin) {
+        signIn(data.admin);
+        navigate("/", { replace: true });
+      } else {
+        toast.error("Login failed: Invalid credentials");
+      }
+    } catch (error: any) {
+      toast.error("Login failed: " + (error.message || "Unknown error"));
     }
     setLoading(false);
   };
