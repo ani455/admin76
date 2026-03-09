@@ -335,21 +335,21 @@ serve(async (req) => {
         let where = "WHERE w.sthiti = '0'";
         const qp: any[] = [];
         if (search) {
-          where += " AND (bc.account LIKE ? OR u.mobile LIKE ?)";
-          qp.push(`%${search}%`, `%${search}%`);
+          where += " AND (k.khatesankhye LIKE ? OR u.mobile LIKE ? OR k.phalanubhavi LIKE ?)";
+          qp.push(`%${search}%`, `%${search}%`, `%${search}%`);
         }
         const [rows] = await db.query(
           `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
                   w.dharavahi as order_id, w.dinankavannuracisi as created_at,
+                  w.tike as remark,
                   u.mobile as user_mobile,
                   COALESCE(sk.motta, 0) as user_balance,
-                  bc.name as bank_name, bc.account as account_no,
-                  k.kod as ifsc
+                  k.khatehesaru as bank_name, k.khatesankhye as account_no,
+                  k.kod as ifsc, k.phalanubhavi as holder_name
            FROM hintegedukolli w
            LEFT JOIN shonu_subjects u ON u.id = w.balakedara
            LEFT JOIN shonu_kaichila sk ON sk.balakedara = w.balakedara
-           LEFT JOIN bankcard bc ON bc.id = w.khateshonu
-           LEFT JOIN khate k ON k.shonu = w.khateshonu
+           LEFT JOIN khate k ON k.byabaharkarta = w.balakedara AND k.sthiti = 'active'
            ${where} ORDER BY w.shonu DESC`,
           qp
         );
@@ -360,33 +360,31 @@ serve(async (req) => {
         const [rows] = await db.query(
           `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
                   w.dharavahi as order_id, w.dinankavannuracisi as created_at,
+                  w.tike as remark,
                   u.mobile as user_mobile,
-                  bc.name as bank_name, bc.account as account_no,
-                  k.kod as ifsc,
+                  k.khatehesaru as bank_name, k.khatesankhye as account_no,
+                  k.kod as ifsc, k.phalanubhavi as holder_name,
                   CASE w.sthiti WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' ELSE w.sthiti END as status
            FROM hintegedukolli w
            LEFT JOIN shonu_subjects u ON u.id = w.balakedara
-           LEFT JOIN bankcard bc ON bc.id = w.khateshonu
-           LEFT JOIN khate k ON k.shonu = w.khateshonu
-           WHERE w.sthiti != '0' ORDER BY w.shonu DESC LIMIT 50`
+           LEFT JOIN khate k ON k.byabaharkarta = w.balakedara AND k.sthiti = 'active'
+           WHERE w.sthiti != '0' ORDER BY w.shonu DESC LIMIT 100`
         );
         result = rows;
         break;
       }
       case "approve_withdrawal": {
-        // Accept: just update status, do NOT deduct balance (already deducted when user requested)
-        const { id } = params;
+        const { id, remark } = params;
         const today = new Date().toISOString().slice(0, 19).replace('T', ' ');
         await db.query(
-          "UPDATE hintegedukolli SET sthiti = '1', tike = 'Completed', dinankavannuracisi = ? WHERE shonu = ?",
-          [today, id]
+          "UPDATE hintegedukolli SET sthiti = '1', tike = ?, dinankavannuracisi = ? WHERE shonu = ?",
+          [remark || 'Completed', today, id]
         );
         result = { success: true };
         break;
       }
       case "reject_withdrawal": {
-        // Reject: update status AND refund balance back to user
-        const { id } = params;
+        const { id, remark, addWager, wagerAmount } = params;
         const today = new Date().toISOString().slice(0, 19).replace('T', ' ');
         
         // Get withdrawal details
@@ -399,11 +397,19 @@ serve(async (req) => {
           [Number(wRow.motta), wRow.balakedara]
         );
         
-        // Update withdrawal status
-        await db.query(
-          "UPDATE hintegedukolli SET sthiti = '2', tike = 'Rejected', dinankavannuracisi = ? WHERE shonu = ?",
-          [today, id]
-        );
+        // If addWager, also add wager amount to user's balance
+        if (addWager && wagerAmount && Number(wagerAmount) > 0) {
+          // You can store wager info in the remark
+          await db.query(
+            "UPDATE hintegedukolli SET sthiti = '2', tike = ?, dinankavannuracisi = ? WHERE shonu = ?",
+            [remark ? `${remark} | Wager: ₹${wagerAmount}` : `Rejected | Wager: ₹${wagerAmount}`, today, id]
+          );
+        } else {
+          await db.query(
+            "UPDATE hintegedukolli SET sthiti = '2', tike = ?, dinankavannuracisi = ? WHERE shonu = ?",
+            [remark || 'Rejected', today, id]
+          );
+        }
         result = { success: true };
         break;
       }
