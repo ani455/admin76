@@ -866,13 +866,20 @@ serve(async (req) => {
       // ===== BANK DETAILS MODIFY =====
       case "get_user_bank_details": {
         const { userId } = params;
-        const [rows] = await db.query("SELECT id, userid, name, type, account FROM bankcard WHERE userid = ?", [userId]);
+        const [rows] = await db.query(
+          `SELECT shonu as id, byabaharkarta as user_id, phalanubhavi as name, khatehesaru as bank_name,
+                  khatesankhye as account, kod as ifsc, daka as email, duravani as mobile, sthiti as status
+           FROM khate WHERE byabaharkarta = ?`, [userId]
+        );
         result = rows;
         break;
       }
       case "update_bank_detail": {
-        const { bankId, name, account } = params;
-        await db.query("UPDATE bankcard SET name = ?, account = ? WHERE id = ?", [name, account, bankId]);
+        const { bankId, name, account, ifsc, bankName } = params;
+        await db.query(
+          "UPDATE khate SET phalanubhavi = ?, khatesankhye = ?, kod = ?, khatehesaru = ? WHERE shonu = ?",
+          [name, account, ifsc || '', bankName || '', bankId]
+        );
         result = { success: true };
         break;
       }
