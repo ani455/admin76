@@ -20,29 +20,45 @@ export default function UplineChainPage() {
     setSearchId(userId.trim());
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Upline Chain</h1>
+    <motion.div initial="hidden" animate="show" variants={containerVariants}>
+      <motion.div variants={itemVariants} className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground font-display tracking-tight">Upline Chain</h1>
         <p className="text-sm text-muted-foreground mt-1">Trace any user's referral chain upward</p>
       </motion.div>
 
-      <div className="glass-card-solid rounded-2xl p-6 mb-6">
-        <div className="flex gap-3">
-          <input
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Enter User ID or Mobile..."
-            className="input-dark flex-1 h-12 px-4 rounded-xl text-sm"
-          />
+      <motion.div variants={itemVariants} className="glass-card-solid rounded-2xl p-6 mb-6 shadow-sm border-border/50">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="Enter User ID or Mobile..."
+              className="search-input w-full h-12 pl-10 pr-4"
+            />
+          </div>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleSearch}
-            className="btn-neon px-6 h-12 rounded-xl inline-flex items-center gap-2 text-sm font-display"
+            className="btn-neon px-8 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-display whitespace-nowrap"
             style={{ background: 'linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%))' }}>
-            <Search className="w-4 h-4" /> Search
+            Trace Chain
           </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {isLoading && (
         <div className="flex justify-center py-20">
@@ -50,41 +66,75 @@ export default function UplineChainPage() {
         </div>
       )}
 
-      {isError && <p className="text-center text-destructive py-10">User not found or error occurred.</p>}
+      {isError && (
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-10 bg-destructive/10 rounded-2xl border border-destructive/20">
+          <p className="text-destructive font-medium">User not found or error occurred.</p>
+        </motion.div>
+      )}
 
       {chain && chain.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-4 relative">
+          <div className="absolute left-10 top-10 bottom-10 w-0.5 bg-gradient-to-b from-primary/50 via-border to-transparent -z-10" />
+          
           {chain.map((u: any, i: number) => (
-            <motion.div key={u.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
-              className="glass-card-solid rounded-2xl p-5 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: i === 0 ? 'hsl(220, 90%, 56% / 0.15)' : 'hsl(var(--muted))', border: i === 0 ? '1px solid hsl(220, 90%, 56% / 0.3)' : '1px solid hsl(var(--border))' }}>
-                {i === 0 ? <User className="w-4 h-4 text-primary" /> : <ArrowUp className="w-4 h-4 text-muted-foreground" />}
+            <motion.div key={u.id} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+              className="glass-card-solid rounded-2xl p-5 flex items-center gap-5 shadow-sm hover:shadow-md transition-shadow duration-300 relative group overflow-hidden border-border/50">
+              
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 relative z-10"
+                style={{ 
+                  background: i === 0 ? 'linear-gradient(135deg, hsl(220, 90%, 56%), hsl(220, 80%, 48%))' : 'hsl(var(--secondary))', 
+                  boxShadow: i === 0 ? '0 4px 15px hsl(220, 90%, 56% / 0.3)' : 'none' 
+                }}>
+                {i === 0 ? <User className="w-5 h-5 text-white" /> : <ArrowUp className="w-5 h-5 text-muted-foreground" />}
+                
+                {/* Level Badge Badge */}
+                <div className="absolute -top-2 -right-2 text-[9px] font-bold font-display px-2 py-0.5 rounded-full"
+                  style={{ background: i === 0 ? 'hsl(var(--card))' : 'hsl(var(--primary)/0.1)', color: i === 0 ? 'hsl(var(--foreground))' : 'hsl(var(--primary))' }}>
+                  L{i}
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-display">
-                    {i === 0 ? "Target User" : `Level ${i}`}
+              
+              <div className="flex-1 min-w-0 relative z-10">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider font-display ${i === 0 ? "text-primary" : "text-muted-foreground"}`}>
+                    {i === 0 ? "Target User" : `Upline Level ${i}`}
                   </span>
                 </div>
-                <p className="text-sm font-bold text-foreground font-display mt-0.5">ID: {u.id}</p>
-                <p className="text-xs text-muted-foreground">📱 {u.mobile} • Code: {u.owncode || "—"} • Referred by: {u.referral_code || "None"}</p>
+                <div className="flex flex-col sm:flex-row sm:items-end gap-1 sm:gap-4">
+                  <p className="text-base font-bold text-foreground font-mono">{u.id}</p>
+                  <p className="text-sm text-muted-foreground">📱 {u.mobile}</p>
+                </div>
+                <div className="flex items-center gap-3 mt-1.5 text-xs">
+                  <span className="bg-secondary px-2 py-0.5 rounded text-muted-foreground border border-border/50">Code: <span className="font-mono text-foreground">{u.owncode || "—"}</span></span>
+                  <span className="bg-secondary px-2 py-0.5 rounded text-muted-foreground border border-border/50">Ref by: <span className="font-mono text-foreground">{u.referral_code || "None"}</span></span>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-bold text-foreground font-display">₹{Number(u.balance || 0).toLocaleString("en-IN")}</p>
-                <p className="text-[10px] text-muted-foreground">Balance</p>
+              
+              <div className="text-right relative z-10 hidden sm:block">
+                <p className="text-xl font-bold text-foreground font-display">₹{Number(u.balance || 0).toLocaleString("en-IN")}</p>
+                <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mt-0.5">Current Balance</p>
               </div>
             </motion.div>
           ))}
           {chain.length > 0 && !chain[chain.length - 1].referral_code && (
-            <p className="text-center text-xs text-muted-foreground py-2">🔝 Top of the chain reached</p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: chain.length * 0.1 + 0.2 }} className="text-center py-4 flex items-center justify-center gap-2 text-muted-foreground">
+              <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                <ArrowUp className="w-3 h-3" />
+              </div>
+              <span className="text-xs font-medium uppercase tracking-widest font-display">Top of the chain reached</span>
+            </motion.div>
           )}
         </div>
       )}
 
       {chain && chain.length === 0 && (
-        <p className="text-center text-muted-foreground py-10">No upline chain found for this user.</p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-muted-foreground py-20 glass-card-solid rounded-2xl border border-dashed border-border">
+          <Link2 className="w-10 h-10 mx-auto text-muted-foreground/30 mb-3" />
+          <p className="font-medium">No upline chain found for this user.</p>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

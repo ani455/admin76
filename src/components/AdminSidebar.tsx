@@ -69,7 +69,7 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    title: "Extra Settings",
+    title: "Advanced Settings",
     icon: Settings2,
     items: [
       { title: "Upline Chain", path: "/extra/upline-chain", icon: Link2 },
