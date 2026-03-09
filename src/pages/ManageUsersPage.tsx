@@ -61,11 +61,11 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
         initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
         className="relative w-full max-w-[560px] h-full overflow-y-auto"
-        style={{ background: "hsl(225, 20%, 10%)", borderLeft: "1px solid hsl(225, 15%, 18%)" }}
+        style={{ background: "hsl(var(--card))", borderLeft: "1px solid hsl(var(--border))" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "hsl(225, 20%, 10%)", borderBottom: "1px solid hsl(225, 15%, 18%)" }}>
+        <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "hsl(var(--card))", borderBottom: "1px solid hsl(var(--border))" }}>
           <h3 className="text-base font-bold text-foreground font-display">User Details</h3>
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors">
             <X className="w-4 h-4 text-muted-foreground" />
@@ -156,7 +156,7 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(225, 18%, 13%)" }}>
+            <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted))" }}>
               {tabs.map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${
@@ -259,7 +259,7 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
 // ─── Helper Components ───
 function InfoItem({ icon, label, value, mono }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
   return (
-    <div className="rounded-xl p-2.5" style={{ background: "hsl(225, 18%, 12%)" }}>
+    <div className="rounded-xl p-2.5" style={{ background: "hsl(var(--muted))" }}>
       <div className="flex items-center gap-1.5 mb-0.5">
         <span className="text-muted-foreground">{icon}</span>
         <span className="text-[10px] text-muted-foreground uppercase">{label}</span>
@@ -373,13 +373,11 @@ export default function ManageUsersPage() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setShowFilters(f => !f)}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${showFilters ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}
-            style={!showFilters ? { border: "1px solid hsl(225, 15%, 22%)" } : {}}>
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all border border-border ${showFilters ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}>
             <Filter className="w-4 h-4" />
           </button>
           <button onClick={() => queryClient.invalidateQueries({ queryKey: ["manage-users"] })}
-            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-all"
-            style={{ border: "1px solid hsl(225, 15%, 22%)" }}>
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-all border border-border">
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${isFetching ? "animate-spin" : ""}`} />
           </button>
           <div className="relative w-full sm:w-72">
@@ -395,7 +393,7 @@ export default function ManageUsersPage() {
         {showFilters && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="mb-4 overflow-hidden">
-            <div className="flex flex-wrap gap-2 p-3 rounded-xl" style={{ background: "hsl(225, 18%, 13%)", border: "1px solid hsl(225, 15%, 18%)" }}>
+            <div className="flex flex-wrap gap-2 p-3 rounded-xl" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider self-center mr-2">Status:</span>
               {(["all", "active", "frozen"] as StatusFilter[]).map(s => (
                 <button key={s} onClick={() => setStatusFilter(s)}
@@ -474,7 +472,7 @@ export default function ManageUsersPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: "1px solid hsl(225, 15%, 12%)", background: "hsl(228, 22%, 8%)" }}>
+              <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}>
                 <p className="text-[11px] text-muted-foreground font-medium">{(page - 1) * perPage + 1}–{Math.min(page * perPage, totalCount)} of {totalCount}</p>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setPage(1)} disabled={page === 1}

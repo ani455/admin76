@@ -49,7 +49,7 @@ export default function PlaceholderPage() {
         >
           <Construction className="w-7 h-7" style={{ color: 'hsl(38, 92%, 55%)' }} />
         </div>
-        <h2 className="text-lg font-bold text-white mb-2 font-display">{title}</h2>
+        <h2 className="text-lg font-bold text-foreground mb-2 font-display">{title}</h2>
         <p className="text-sm text-muted-foreground">This module will be available soon.</p>
       </div>
     </motion.div>
