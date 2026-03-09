@@ -66,8 +66,8 @@ export default function BankDetailsPage() {
             <div key={bank.id} className="glass-card-solid rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-foreground font-display">Bank #{idx + 1}</h3>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bank.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                  {bank.status || 'N/A'}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bank.status === 1 || bank.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                  {bank.status === 1 || bank.status === 'active' ? 'Active' : bank.status === 0 || bank.status === 'off' ? 'Inactive' : bank.status || 'N/A'}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
