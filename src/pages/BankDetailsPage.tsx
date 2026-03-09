@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 export default function BankDetailsPage() {
   const [userId, setUserId] = useState("");
   const [banks, setBanks] = useState<any[]>([]);
+  const [searched, setSearched] = useState(false);
 
   const searchMutation = useMutation({
     mutationFn: () => remoteDb("get_user_bank_details", { userId }),
