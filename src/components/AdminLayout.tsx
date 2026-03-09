@@ -44,7 +44,7 @@ export default function AdminLayout() {
             >
               <Shield className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-sm font-bold text-foreground font-display tracking-tight">ALADDINN</span>
+            <span className="text-sm font-black text-foreground italic" style={{ fontFamily: "'Playfair Display', serif" }}>Rivestro</span>
           </div>
         </header>
 
