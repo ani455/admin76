@@ -77,7 +77,7 @@ export default function UplineChainPage() {
           <div className="absolute left-10 top-10 bottom-10 w-0.5 bg-gradient-to-b from-primary/50 via-border to-transparent -z-10" />
           
           {chain.map((u: any, i: number) => (
-            <motion.div key={u.id} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 24 }}
+            <motion.div key={u.id} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
               className="glass-card-solid rounded-2xl p-5 flex items-center gap-5 shadow-sm hover:shadow-md transition-shadow duration-300 relative group overflow-hidden border-border/50">
               
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
