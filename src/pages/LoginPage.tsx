@@ -234,7 +234,7 @@ export default function LoginPage() {
               <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary">
                 <Shield className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground font-display">ALADDINN</span>
+              <span className="text-2xl font-black text-foreground italic" style={{ fontFamily: "'Playfair Display', serif" }}>Rivestro</span>
             </motion.div>
           </div>
 
