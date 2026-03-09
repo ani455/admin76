@@ -65,7 +65,7 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "hsl(225, 20%, 10%)", borderBottom: "1px solid hsl(225, 15%, 18%)" }}>
+        <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "hsl(var(--card))", borderBottom: "1px solid hsl(var(--border))" }}>
           <h3 className="text-base font-bold text-foreground font-display">User Details</h3>
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors">
             <X className="w-4 h-4 text-muted-foreground" />
