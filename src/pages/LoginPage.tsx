@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
+import { Eye, EyeOff, Lock, User, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 
