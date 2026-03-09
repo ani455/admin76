@@ -42,7 +42,7 @@ export default function UsersQueryPage() {
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           <div className="glass-card-solid rounded-2xl p-6">
             <h3 className="text-sm font-bold text-foreground font-display mb-4">User Details</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {[
                 { label: "User ID", value: data.user.id },
                 { label: "Mobile", value: data.user.mobile },
@@ -52,13 +52,13 @@ export default function UsersQueryPage() {
                 { label: "Total Withdraw", value: `₹${Number(data.user.total_withdraw).toLocaleString("en-IN")}` },
                 { label: "Referral Code", value: data.user.referral_code || "—" },
                 { label: "Own Code", value: data.user.owncode || "—" },
-                { label: "IP", value: data.user.ip_address || "—" },
+                { label: "IP", value: data.user.ip_address || "—", wide: true },
                 { label: "Status", value: data.user.account_frozen === 1 ? "Frozen" : "Active" },
                 { label: "Registered", value: new Date(data.user.created_at).toLocaleDateString("en-IN") },
-              ].map((item) => (
-                <div key={item.label}>
+              ].map((item: any) => (
+                <div key={item.label} className={item.wide ? "sm:col-span-2" : ""}>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display mb-1">{item.label}</p>
-                  <p className="text-sm text-foreground font-medium">{item.value}</p>
+                  <p className="text-sm text-foreground font-medium break-all">{item.value}</p>
                 </div>
               ))}
             </div>
