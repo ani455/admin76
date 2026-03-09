@@ -8,13 +8,22 @@ import { toast } from "sonner";
 
 const NUMBERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-function getNumberColor(n: number) {
+function getNumberColor(n: number | string): string {
+  if (typeof n === "string") {
+    if (n === "Red") return "hsl(0, 72%, 50%)";
+    if (n === "Green") return "hsl(142, 71%, 45%)";
+    if (n === "Violet") return "hsl(270, 60%, 55%)";
+    if (n === "Big") return "hsl(38, 92%, 50%)";
+    if (n === "Small") return "hsl(199, 89%, 48%)";
+    return "hsl(var(--muted-foreground))";
+  }
   if (n === 0 || n === 5) return "hsl(270, 60%, 55%)";
   if (n % 2 === 0) return "hsl(0, 72%, 50%)";
   return "hsl(142, 71%, 45%)";
 }
 
-function getNumberColorName(n: number) {
+function getNumberColorName(n: number | string): string {
+  if (typeof n === "string") return n;
   if (n === 0 || n === 5) return "Violet";
   if (n % 2 === 0) return "Red";
   return "Green";
