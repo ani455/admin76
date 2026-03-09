@@ -22,7 +22,10 @@ export default function BankDetailsPage() {
 
   const updateMutation = useMutation({
     mutationFn: (params: any) => remoteDb("update_bank_detail", params),
-    onSuccess: () => toast.success("Bank details updated!"),
+    onSuccess: () => {
+      toast.success("Bank details updated!");
+      searchMutation.mutate();
+    },
     onError: (e: any) => toast.error("Error: " + e.message),
   });
 
@@ -61,26 +64,45 @@ export default function BankDetailsPage() {
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {banks.map((bank: any, idx: number) => (
             <div key={bank.id} className="glass-card-solid rounded-2xl p-6">
-              <h3 className="text-sm font-bold text-foreground font-display mb-4">Bank #{idx + 1}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-foreground font-display">Bank #{idx + 1}</h3>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bank.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                  {bank.status || 'N/A'}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Name</label>
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Account Holder Name</label>
                   <input type="text" defaultValue={bank.name} className="search-input !pl-4" id={`name-${bank.id}`} />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Type</label>
-                  <input type="text" value={bank.type} disabled className="search-input !pl-4 opacity-50" />
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Bank Name</label>
+                  <input type="text" defaultValue={bank.bank_name} className="search-input !pl-4" id={`bankname-${bank.id}`} />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Account</label>
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Account Number</label>
                   <input type="text" defaultValue={bank.account} className="search-input !pl-4" id={`account-${bank.id}`} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">IFSC Code</label>
+                  <input type="text" defaultValue={bank.ifsc} className="search-input !pl-4" id={`ifsc-${bank.id}`} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Email</label>
+                  <input type="text" value={bank.email || '—'} disabled className="search-input !pl-4 opacity-50" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Mobile</label>
+                  <input type="text" value={bank.mobile || '—'} disabled className="search-input !pl-4 opacity-50" />
                 </div>
               </div>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   const name = (document.getElementById(`name-${bank.id}`) as HTMLInputElement).value;
                   const account = (document.getElementById(`account-${bank.id}`) as HTMLInputElement).value;
-                  updateMutation.mutate({ bankId: bank.id, name, account });
+                  const ifsc = (document.getElementById(`ifsc-${bank.id}`) as HTMLInputElement).value;
+                  const bankName = (document.getElementById(`bankname-${bank.id}`) as HTMLInputElement).value;
+                  updateMutation.mutate({ bankId: bank.id, name, account, ifsc, bankName });
                 }}
                 disabled={updateMutation.isPending}
                 className="btn-neon inline-flex items-center gap-2 px-4 py-2 text-[11px] font-display disabled:opacity-50">
