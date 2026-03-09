@@ -11,8 +11,12 @@ export default function BankDetailsPage() {
 
   const searchMutation = useMutation({
     mutationFn: () => remoteDb("get_user_bank_details", { userId }),
-    onSuccess: (data) => setBanks(data || []),
-    onError: () => { setBanks([]); toast.error("No bank details found"); },
+    onSuccess: (data) => {
+      setBanks(data || []);
+      setSearched(true);
+      if (!data || data.length === 0) toast.info("No bank details found for this user");
+    },
+    onError: () => { setBanks([]); setSearched(true); toast.error("User not found"); },
   });
 
   const updateMutation = useMutation({
