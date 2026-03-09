@@ -1165,6 +1165,17 @@ serve(async (req) => {
         break;
       }
 
+      // ===== Create admin user =====
+      case "create_admin": {
+        const { username, password } = params;
+        await db.query(
+          "INSERT INTO nirvahaka_shonu (nirvahaka_hesaru, guptapada, sthiti) VALUES (?, MD5(?), '1')",
+          [username, password]
+        );
+        result = { success: true, username };
+        break;
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`);
     }
