@@ -54,7 +54,7 @@ export default function UsersQueryPage() {
                 { label: "Own Code", value: data.user.owncode || "—" },
                 { label: "IP", value: data.user.ip_address || "—", wide: true },
                 { label: "Status", value: data.user.account_frozen === 1 ? "Frozen" : "Active" },
-                { label: "Registered", value: new Date(data.user.created_at).toLocaleDateString("en-IN") },
+                { label: "Registered", value: data.user.created_at ? String(data.user.created_at).split("T")[0].split(" ")[0] : "—" },
               ].map((item: any) => (
                 <div key={item.label} className={item.wide ? "sm:col-span-2" : ""}>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] font-display mb-1">{item.label}</p>
