@@ -1115,7 +1115,34 @@ serve(async (req) => {
         );
         const admin = (rows as any[])[0];
         if (!admin) {
-          throw new Error("Invalid credentials");
+          // Debug: check if user exists at all
+          const [debugRows] = await db.query(
+            "SELECT nirvahaka_hesaru, sthiti, guptapada FROM nirvahaka_shonu WHERE nirvahaka_hesaru = ?",
+            [username]
+          );
+          const debugInfo = (debugRows as any[])[0];
+          if (debugInfo) {
+            // Check if password is already stored as MD5 or plain
+            const [md5Check] = await db.query(
+              "SELECT * FROM nirvahaka_shonu WHERE nirvahaka_hesaru = ? AND guptapada = ? AND sthiti = '1'",
+              [username, password]
+            );
+            const plainMatch = (md5Check as any[])[0];
+            if (plainMatch) {
+              // Password is stored as plain text, not MD5
+              result = {
+                success: true,
+                admin: {
+                  username: plainMatch.nirvahaka_hesaru,
+                  unohs: plainMatch.unohs || plainMatch.shonu || plainMatch.id,
+                  is_superadmin: false,
+                },
+              };
+              break;
+            }
+            throw new Error(`Invalid credentials (user found, status=${debugInfo.sthiti}, pwd_hash=${debugInfo.guptapada?.substring(0,8)}...)`);
+          }
+          throw new Error("Invalid credentials (user not found)");
         }
 
         result = {
@@ -1126,6 +1153,15 @@ serve(async (req) => {
             is_superadmin: false,
           },
         };
+        break;
+      }
+
+      // ===== DEBUG: List admin users =====
+      case "list_admins": {
+        const [rows] = await db.query(
+          "SELECT nirvahaka_hesaru, sthiti, LEFT(guptapada, 10) as pwd_prefix FROM nirvahaka_shonu LIMIT 20"
+        );
+        result = rows;
         break;
       }
 
