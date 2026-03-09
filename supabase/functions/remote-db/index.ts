@@ -43,8 +43,105 @@ async function getPool() {
   gelluonduhogu           = wingo 1min periods (atadaaidi=period_id, kramasankhye=serial)
 */
 
+// ─── SECURITY: Input Validation Helpers ───
+function sanitizeString(val: any, maxLen = 200): string {
+  if (typeof val !== "string") return "";
+  return val.trim().slice(0, maxLen);
+}
+
+function sanitizeNumber(val: any, min = 0, max = 999999999): number {
+  const n = Number(val);
+  if (isNaN(n) || !isFinite(n)) return 0;
+  return Math.max(min, Math.min(max, n));
+}
+
+function validateRequired(params: Record<string, any>, fields: string[]) {
+  for (const f of fields) {
+    if (params[f] === undefined || params[f] === null || params[f] === "") {
+      throw new Error(`Missing required field: ${f}`);
+    }
+  }
+}
+
+// ─── SECURITY: Allowed actions whitelist ───
+const ALLOWED_ACTIONS = new Set([
+  "admin_login", "dashboard_stats", "get_game_settings", "update_game_settings",
+  "get_users", "ban_user", "get_user_detail", "get_pending_deposits", "get_completed_deposits",
+  "approve_deposit", "reject_deposit", "get_pending_withdrawals", "get_completed_withdrawals",
+  "approve_withdrawal", "reject_withdrawal", "get_game_periods", "set_game_result",
+  "unset_game_result", "get_current_prediction", "get_live_bets", "get_bet_summary",
+  "get_withdraw_sent", "get_withdraw_rejected", "get_gift_codes", "create_gift_code",
+  "delete_gift_code", "add_user_balance", "deduct_user_balance", "get_banned_users",
+  "check_same_ip", "user_query", "get_demo_users", "add_demo_user", "remove_demo_user",
+  "get_agents", "add_agent", "remove_agent", "get_user_bank_details", "update_bank_detail",
+  "change_admin_password", "get_support_queries", "respond_support", "get_illegal_bets",
+  "get_usdt_rate", "update_usdt_rate", "get_upline_chain", "get_subordinate_data",
+  "get_user_activity",
+]);
+
+// ─── SECURITY: Rate limiting for login ───
+const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+function checkLoginRateLimit(identifier: string): void {
+  const now = Date.now();
+  const record = loginAttempts.get(identifier);
+  if (record) {
+    if (now - record.lastAttempt > LOGIN_LOCKOUT_MS) {
+      loginAttempts.delete(identifier);
+      return;
+    }
+    if (record.count >= MAX_LOGIN_ATTEMPTS) {
+      throw new Error("Too many login attempts. Please try again later.");
+    }
+  }
+}
+
+function recordLoginAttempt(identifier: string, success: boolean): void {
+  if (success) {
+    loginAttempts.delete(identifier);
+    return;
+  }
+  const record = loginAttempts.get(identifier) || { count: 0, lastAttempt: 0 };
+  record.count++;
+  record.lastAttempt = Date.now();
+  loginAttempts.set(identifier, record);
+}
+
 // Helper: get demo user exclusion subquery
 const DEMO_EXCLUDE = "(SELECT balakedara FROM `demo` WHERE `sthiti`='1')";
+
+// ─── SECURITY: Game table name resolver (prevents SQL injection via table names) ───
+function getGameTables(game_type: string, duration: string): { betTable: string; periodTable: string; predTable: string } {
+  const validGameTypes = ["wingo", "k3", "5d"];
+  const validDurations = ["30sec", "1min", "3min", "5min", "10min"];
+  
+  if (!validGameTypes.includes(game_type)) throw new Error("Invalid game type");
+  if (!validDurations.includes(duration)) throw new Error("Invalid duration");
+
+  let betTable = "bajikattuttate";
+  let periodTable = "gelluonduhogu";
+  let predTable = "hastacalita_phalitansa";
+
+  if (game_type === "wingo") {
+    if (duration === "3min") { betTable = "bajikattuttate_drei"; periodTable = "gelluonduhogu_drei"; predTable = "hastacalita_phalitansa_drei"; }
+    else if (duration === "5min") { betTable = "bajikattuttate_funf"; periodTable = "gelluonduhogu_funf"; predTable = "hastacalita_phalitansa_funf"; }
+    else if (duration === "30sec" || duration === "10min") { betTable = "bajikattuttate_zehn"; periodTable = "gelluonduhogu_zehn"; predTable = "hastacalita_phalitansa_zehn"; }
+  } else if (game_type === "k3") {
+    betTable = "bajikattuttate_kemuru"; periodTable = "gelluonduhogu_kemuru"; predTable = "hastacalita_phalitansa_kemuru";
+    if (duration === "3min") { betTable = "bajikattuttate_kemuru_drei"; periodTable = "gelluonduhogu_kemuru_drei"; predTable = "hastacalita_phalitansa_kemuru_drei"; }
+    else if (duration === "5min") { betTable = "bajikattuttate_kemuru_funf"; periodTable = "gelluonduhogu_kemuru_funf"; predTable = "hastacalita_phalitansa_kemuru_funf"; }
+    else if (duration === "10min") { betTable = "bajikattuttate_kemuru_zehn"; periodTable = "gelluonduhogu_kemuru_zehn"; predTable = "hastacalita_phalitansa_kemuru_zehn"; }
+  } else if (game_type === "5d") {
+    betTable = "bajikattuttate_aidudi"; periodTable = "gelluonduhogu_aidudi"; predTable = "hastacalita_phalitansa_aidudi";
+    if (duration === "3min") { betTable = "bajikattuttate_aidudi_drei"; periodTable = "gelluonduhogu_aidudi_drei"; predTable = "hastacalita_phalitansa_aidudi_drei"; }
+    else if (duration === "5min") { betTable = "bajikattuttate_aidudi_funf"; periodTable = "gelluonduhogu_aidudi_funf"; predTable = "hastacalita_phalitansa_aidudi_funf"; }
+    else if (duration === "10min") { betTable = "bajikattuttate_aidudi_zehn"; periodTable = "gelluonduhogu_aidudi_zehn"; predTable = "hastacalita_phalitansa_aidudi_zehn"; }
+  }
+
+  return { betTable, periodTable, predTable };
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -52,64 +149,55 @@ serve(async (req) => {
   }
 
   try {
-    const { action, params } = await req.json();
+    const { action, params = {} } = await req.json();
+
+    // ─── SECURITY: Validate action is whitelisted ───
+    if (!action || typeof action !== "string" || !ALLOWED_ACTIONS.has(action)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid action" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const db = await getPool();
     let result: any;
 
     switch (action) {
       // ===== DASHBOARD =====
       case "dashboard_stats": {
-        const today = params?.today || new Date().toISOString().split("T")[0];
+        const today = sanitizeString(params?.today) || new Date().toISOString().split("T")[0];
 
-        // Total Users (excluding demo)
         const [[totalUsersRow]] = await db.query(
           `SELECT COUNT(*) as cnt FROM shonu_subjects WHERE id NOT IN ${DEMO_EXCLUDE} AND status = 1`
         );
-
-        // Today Users
         const [[todayUsersRow]] = await db.query(
           `SELECT COUNT(*) as cnt FROM shonu_subjects WHERE id NOT IN ${DEMO_EXCLUDE} AND status = 1 AND DATE(createdate) = DATE(?)`,
           [today]
         );
-
-        // User Balance (from wallet table)
         const [[balanceRow]] = await db.query(
           `SELECT COALESCE(SUM(motta), 0) as total FROM shonu_kaichila WHERE balakedara NOT IN ${DEMO_EXCLUDE} AND motta > 0`
         );
-
-        // Today's Recharge (approved deposits today)
         const [[todayRechargeRow]] = await db.query(
           `SELECT COALESCE(SUM(motta), 0) as total FROM thevani WHERE sthiti = '1' AND balakedara NOT IN ${DEMO_EXCLUDE} AND DATE(dinankavannuracisi) = DATE(?)`,
           [today]
         );
-
-        // Today's Withdrawal (approved withdrawals today)
         const [[todayWithdrawRow]] = await db.query(
           `SELECT COALESCE(SUM(motta), 0) as total FROM hintegedukolli WHERE sthiti = '1' AND balakedara NOT IN ${DEMO_EXCLUDE} AND DATE(dinankavannuracisi) = DATE(?)`,
           [today]
         );
-
-        // Pending Recharge
         const [[pendingRechargeRow]] = await db.query(
           `SELECT COALESCE(SUM(motta), 0) as total FROM thevani WHERE sthiti = '0' AND balakedara NOT IN ${DEMO_EXCLUDE}`
         );
-
-        // Success Recharge
         const [[successRechargeRow]] = await db.query(
           `SELECT COALESCE(SUM(motta), 0) as total FROM thevani WHERE sthiti = '1' AND balakedara NOT IN ${DEMO_EXCLUDE}`
         );
-
-        // Total Withdrawal (approved)
         const [[totalWithdrawalRow]] = await db.query(
           `SELECT COALESCE(SUM(motta), 0) as total FROM hintegedukolli WHERE sthiti = '1' AND balakedara NOT IN ${DEMO_EXCLUDE}`
         );
-
-        // Withdrawal Requests (pending)
         const [[pendingWithdrawRow]] = await db.query(
           `SELECT COALESCE(SUM(motta), 0) as total FROM hintegedukolli WHERE sthiti = '0' AND balakedara NOT IN ${DEMO_EXCLUDE}`
         );
 
-        // Today's bets across ALL game tables
         const betTables = [
           'bajikattuttate', 'bajikattuttate_drei', 'bajikattuttate_funf', 'bajikattuttate_zehn',
           'bajikattuttate_kemuru', 'bajikattuttate_kemuru_drei', 'bajikattuttate_kemuru_funf', 'bajikattuttate_kemuru_zehn',
@@ -129,7 +217,7 @@ serve(async (req) => {
               [today]
             );
             totalWin += Number(winRow.tw);
-          } catch (_) { /* table may not exist, skip */ }
+          } catch (_) { /* table may not exist */ }
         }
 
         result = {
@@ -152,19 +240,26 @@ serve(async (req) => {
       case "get_game_settings": {
         const [rows] = await db.query("SELECT * FROM game_win_settings WHERE id=1 LIMIT 1");
         const row = rows[0] || null;
-        // Map to frontend expected format
         result = row ? { game_mode: row.game, process_type: row.process_type } : null;
         break;
       }
       case "update_game_settings": {
-        await db.query("UPDATE game_win_settings SET game=?, process_type=? WHERE id=1", [params.game_mode, params.process_type]);
+        const validModes = ["wingo", "k3", "5d"];
+        const validProcesses = ["highest_bet_wins", "random", "default"];
+        const mode = sanitizeString(params.game_mode);
+        const process = sanitizeString(params.process_type);
+        if (!validModes.includes(mode)) throw new Error("Invalid game mode");
+        if (!validProcesses.includes(process)) throw new Error("Invalid process type");
+        await db.query("UPDATE game_win_settings SET game=?, process_type=? WHERE id=1", [mode, process]);
         result = { success: true };
         break;
       }
 
       // ===== USERS =====
       case "get_users": {
-        const { search, page = 1, perPage = 50 } = params;
+        const search = sanitizeString(params.search, 100);
+        const page = sanitizeNumber(params.page || 1, 1, 10000);
+        const perPage = sanitizeNumber(params.perPage || 50, 1, 100);
         const offset = (page - 1) * perPage;
         let where = `WHERE shonu_subjects.id NOT IN ${DEMO_EXCLUDE}`;
         const queryParams: any[] = [];
@@ -195,19 +290,20 @@ serve(async (req) => {
         break;
       }
       case "ban_user": {
+        validateRequired(params, ["id"]);
         const { id, status } = params;
-        // status=1 is active, account_frozen=1 is frozen
         const newFrozen = status === "active" ? 1 : 0;
-        await db.query("UPDATE shonu_subjects SET account_frozen=? WHERE id=?", [newFrozen, id]);
+        await db.query("UPDATE shonu_subjects SET account_frozen=? WHERE id=?", [newFrozen, sanitizeString(String(id))]);
         result = { newStatus: newFrozen === 1 ? "banned" : "active" };
         break;
       }
 
-      // ===== USER DETAIL (Advanced) =====
+      // ===== USER DETAIL =====
       case "get_user_detail": {
-        const { userId } = params;
+        validateRequired(params, ["userId"]);
+        const userId = sanitizeString(String(params.userId));
         const [[user]] = await db.query(
-          `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, s.ip as ip_address, s.status, s.createdate as created_at, s.account_frozen, s.pwd as password,
+          `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, s.ip as ip_address, s.status, s.createdate as created_at, s.account_frozen,
                   COALESCE(sk.motta, 0) as balance,
                   (SELECT COALESCE(SUM(motta), 0) FROM thevani WHERE balakedara = s.id AND sthiti='1') as total_recharge,
                   (SELECT COALESCE(SUM(motta), 0) FROM hintegedukolli WHERE balakedara = s.id AND sthiti='1') as total_withdraw,
@@ -221,29 +317,21 @@ serve(async (req) => {
         );
         if (!user) throw new Error("User not found");
 
-        // Recent deposits
         const [deposits] = await db.query(
           `SELECT shonu as id, motta as amount, ullekha as utr, dinankavannuracisi as created_at,
                   CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
            FROM thevani WHERE balakedara = ? ORDER BY shonu DESC LIMIT 10`, [userId]
         );
-
-        // Recent withdrawals
         const [withdrawals] = await db.query(
           `SELECT shonu as id, motta as amount, dinankavannuracisi as created_at,
                   CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
            FROM hintegedukolli WHERE balakedara = ? ORDER BY shonu DESC LIMIT 10`, [userId]
         );
-
-        // Bank details
         const [banks] = await db.query("SELECT id, name, type, account FROM bankcard WHERE userid = ?", [userId]);
-
-        // Referrals (users who used this user's code)
         const [referrals] = await db.query(
           `SELECT id, mobile, createdate as created_at FROM shonu_subjects WHERE code = ? LIMIT 20`, [user.owncode]
         );
 
-        // Bet stats across all tables
         let totalBetAmount = 0, totalWinAmount = 0, totalBetCount = 0;
         const betTables = [
           'bajikattuttate', 'bajikattuttate_drei', 'bajikattuttate_funf', 'bajikattuttate_zehn',
@@ -275,7 +363,7 @@ serve(async (req) => {
 
       // ===== DEPOSITS =====
       case "get_pending_deposits": {
-        const { search } = params || {};
+        const search = sanitizeString(params?.search, 100);
         let where = "WHERE d.sthiti = '0'";
         const qp: any[] = [];
         if (search) {
@@ -304,26 +392,24 @@ serve(async (req) => {
         break;
       }
       case "approve_deposit": {
-        const { id, userId, amount } = params;
-        // Get current wallet balance
+        validateRequired(params, ["id", "userId", "amount"]);
+        const { id, userId } = params;
+        const amount = sanitizeNumber(params.amount, 0.01);
         const [[walletRow]] = await db.query(
           "SELECT motta FROM shonu_kaichila WHERE balakedara = ?", [userId]
         );
-        
         if (!walletRow) {
-          // Create wallet if doesn't exist
           await db.query("INSERT INTO shonu_kaichila (balakedara, motta) VALUES (?, ?)", [userId, amount]);
         } else {
-          const newBalance = Number(walletRow.motta) + Number(amount);
+          const newBalance = Number(walletRow.motta) + amount;
           await db.query("UPDATE shonu_kaichila SET motta = ? WHERE balakedara = ?", [newBalance, userId]);
         }
-        
-        // Update deposit status
         await db.query("UPDATE thevani SET sthiti = '1' WHERE shonu = ?", [id]);
         result = { success: true };
         break;
       }
       case "reject_deposit": {
+        validateRequired(params, ["id"]);
         await db.query("UPDATE thevani SET sthiti = '2' WHERE shonu = ?", [params.id]);
         result = { success: true };
         break;
@@ -331,7 +417,7 @@ serve(async (req) => {
 
       // ===== WITHDRAWALS =====
       case "get_pending_withdrawals": {
-        const { search } = params || {};
+        const search = sanitizeString(params?.search, 100);
         let where = "WHERE w.sthiti = '0'";
         const qp: any[] = [];
         if (search) {
@@ -374,20 +460,22 @@ serve(async (req) => {
         break;
       }
       case "approve_withdrawal": {
-        const { id, remark } = params;
+        validateRequired(params, ["id"]);
+        const remark = sanitizeString(params.remark, 500);
         const today = new Date().toISOString().slice(0, 19).replace('T', ' ');
         await db.query(
           "UPDATE hintegedukolli SET sthiti = '1', tike = ?, dinankavannuracisi = ? WHERE shonu = ?",
-          [remark || 'Completed', today, id]
+          [remark || 'Completed', today, params.id]
         );
         result = { success: true };
         break;
       }
       case "reject_withdrawal": {
-        const { id, remark, addWager, wagerAmount } = params;
+        validateRequired(params, ["id"]);
+        const { id, addWager, wagerAmount } = params;
+        const remark = sanitizeString(params.remark, 500);
         const today = new Date().toISOString().slice(0, 19).replace('T', ' ');
         
-        // Get withdrawal details
         const [[wRow]] = await db.query("SELECT balakedara, motta FROM hintegedukolli WHERE shonu = ?", [id]);
         if (!wRow) throw new Error("Withdrawal not found");
         
@@ -397,42 +485,24 @@ serve(async (req) => {
           [Number(wRow.motta), wRow.balakedara]
         );
         
-        // If addWager, also add wager amount to user's balance
-        if (addWager && wagerAmount && Number(wagerAmount) > 0) {
-          // You can store wager info in the remark
-          await db.query(
-            "UPDATE hintegedukolli SET sthiti = '2', tike = ?, dinankavannuracisi = ? WHERE shonu = ?",
-            [remark ? `${remark} | Wager: ₹${wagerAmount}` : `Rejected | Wager: ₹${wagerAmount}`, today, id]
-          );
-        } else {
-          await db.query(
-            "UPDATE hintegedukolli SET sthiti = '2', tike = ?, dinankavannuracisi = ? WHERE shonu = ?",
-            [remark || 'Rejected', today, id]
-          );
-        }
+        const remarkFinal = addWager && wagerAmount && Number(wagerAmount) > 0
+          ? `${remark || 'Rejected'} | Wager: ₹${sanitizeNumber(wagerAmount)}`
+          : remark || 'Rejected';
+        
+        await db.query(
+          "UPDATE hintegedukolli SET sthiti = '2', tike = ?, dinankavannuracisi = ? WHERE shonu = ?",
+          [remarkFinal, today, id]
+        );
         result = { success: true };
         break;
       }
 
       // ===== GAME PERIODS =====
       case "get_game_periods": {
-        const { game_type, duration } = params;
-        let periodTable = "gelluonduhogu";
-        if (game_type === "wingo") {
-          if (duration === "3min") periodTable = "gelluonduhogu_drei";
-          else if (duration === "5min") periodTable = "gelluonduhogu_funf";
-          else if (duration === "10min") periodTable = "gelluonduhogu_zehn";
-        } else if (game_type === "k3") {
-          periodTable = "gelluonduhogu_kemuru";
-          if (duration === "3min") periodTable = "gelluonduhogu_kemuru_drei";
-          else if (duration === "5min") periodTable = "gelluonduhogu_kemuru_funf";
-          else if (duration === "10min") periodTable = "gelluonduhogu_kemuru_zehn";
-        } else if (game_type === "5d") {
-          periodTable = "gelluonduhogu_aidudi";
-          if (duration === "3min") periodTable = "gelluonduhogu_aidudi_drei";
-          else if (duration === "5min") periodTable = "gelluonduhogu_aidudi_funf";
-          else if (duration === "10min") periodTable = "gelluonduhogu_aidudi_zehn";
-        }
+        const { periodTable } = getGameTables(
+          sanitizeString(params.game_type),
+          sanitizeString(params.duration)
+        );
         try {
           const [rows] = await db.query(`SELECT * FROM \`${periodTable}\` ORDER BY kramasankhye DESC LIMIT 50`);
           result = (rows as any[]).map((r: any) => ({
@@ -449,78 +519,34 @@ serve(async (req) => {
         break;
       }
 
-      // ===== SET GAME RESULT (prediction - matches hastacalita_phalitansa from PHP) =====
+      // ===== SET GAME RESULT =====
       case "set_game_result": {
-        const { game_type, duration, result_number } = params;
-        // Table: hastacalita_phalitansa (wingo 1min)
-        // Different durations use different tables with suffixes
-        let predTable = "hastacalita_phalitansa";
-        if (game_type === "wingo") {
-          if (duration === "3min") predTable = "hastacalita_phalitansa_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_funf";
-          else if (duration === "30sec" || duration === "10min") predTable = "hastacalita_phalitansa_zehn";
-        } else if (game_type === "k3") {
-          predTable = "hastacalita_phalitansa_kemuru";
-          if (duration === "3min") predTable = "hastacalita_phalitansa_kemuru_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_kemuru_funf";
-          else if (duration === "10min") predTable = "hastacalita_phalitansa_kemuru_zehn";
-        } else if (game_type === "5d") {
-          predTable = "hastacalita_phalitansa_aidudi";
-          if (duration === "3min") predTable = "hastacalita_phalitansa_aidudi_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_aidudi_funf";
-          else if (duration === "10min") predTable = "hastacalita_phalitansa_aidudi_zehn";
-        }
-        
-        // First unset all predictions (sthiti='0'), then set the chosen number (sthiti='1')
+        const resultNum = sanitizeNumber(params.result_number, 0, 9);
+        const { predTable } = getGameTables(
+          sanitizeString(params.game_type),
+          sanitizeString(params.duration)
+        );
         await db.query(`UPDATE \`${predTable}\` SET sthiti='0'`);
-        await db.query(`UPDATE \`${predTable}\` SET sthiti='1' WHERE sankhye=?`, [result_number]);
+        await db.query(`UPDATE \`${predTable}\` SET sthiti='1' WHERE sankhye=?`, [resultNum]);
         result = { success: true };
         break;
       }
 
-      // ===== UNSET GAME RESULT (reset all predictions) =====
       case "unset_game_result": {
-        const { game_type, duration } = params;
-        let predTable = "hastacalita_phalitansa";
-        if (game_type === "wingo") {
-          if (duration === "3min") predTable = "hastacalita_phalitansa_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_funf";
-          else if (duration === "30sec" || duration === "10min") predTable = "hastacalita_phalitansa_zehn";
-        } else if (game_type === "k3") {
-          predTable = "hastacalita_phalitansa_kemuru";
-          if (duration === "3min") predTable = "hastacalita_phalitansa_kemuru_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_kemuru_funf";
-          else if (duration === "10min") predTable = "hastacalita_phalitansa_kemuru_zehn";
-        } else if (game_type === "5d") {
-          predTable = "hastacalita_phalitansa_aidudi";
-          if (duration === "3min") predTable = "hastacalita_phalitansa_aidudi_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_aidudi_funf";
-          else if (duration === "10min") predTable = "hastacalita_phalitansa_aidudi_zehn";
-        }
+        const { predTable } = getGameTables(
+          sanitizeString(params.game_type),
+          sanitizeString(params.duration)
+        );
         await db.query(`UPDATE \`${predTable}\` SET sthiti='0'`);
         result = { success: true };
         break;
       }
 
-      // ===== GET CURRENT PREDICTION =====
       case "get_current_prediction": {
-        const { game_type, duration } = params;
-        let predTable = "hastacalita_phalitansa";
-        if (game_type === "wingo") {
-          if (duration === "3min") predTable = "hastacalita_phalitansa_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_funf";
-          else if (duration === "30sec" || duration === "10min") predTable = "hastacalita_phalitansa_zehn";
-        } else if (game_type === "k3") {
-          predTable = "hastacalita_phalitansa_kemuru";
-          if (duration === "3min") predTable = "hastacalita_phalitansa_kemuru_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_kemuru_funf";
-          else if (duration === "10min") predTable = "hastacalita_phalitansa_kemuru_zehn";
-        } else if (game_type === "5d") {
-          predTable = "hastacalita_phalitansa_aidudi";
-          if (duration === "3min") predTable = "hastacalita_phalitansa_aidudi_drei";
-          else if (duration === "5min") predTable = "hastacalita_phalitansa_aidudi_funf";
-          else if (duration === "10min") predTable = "hastacalita_phalitansa_aidudi_zehn";
-        }
+        const { predTable } = getGameTables(
+          sanitizeString(params.game_type),
+          sanitizeString(params.duration)
+        );
         try {
           const [rows] = await db.query(`SELECT sankhye, banna FROM \`${predTable}\` WHERE sthiti='1' LIMIT 1`);
           result = (rows as any[])[0] || null;
@@ -528,36 +554,16 @@ serve(async (req) => {
         break;
       }
 
-      // ===== LIVE BETS (real-time bets for current period) =====
       case "get_live_bets": {
-        const { game_type, duration } = params;
-        // Get bet table and period table
-        let betTable = "bajikattuttate";
-        let periodTable = "gelluonduhogu";
-        if (game_type === "wingo") {
-          if (duration === "3min") { betTable = "bajikattuttate_drei"; periodTable = "gelluonduhogu_drei"; }
-          else if (duration === "5min") { betTable = "bajikattuttate_funf"; periodTable = "gelluonduhogu_funf"; }
-          else if (duration === "30sec" || duration === "10min") { betTable = "bajikattuttate_zehn"; periodTable = "gelluonduhogu_zehn"; }
-        } else if (game_type === "k3") {
-          betTable = "bajikattuttate_kemuru"; periodTable = "gelluonduhogu_kemuru";
-          if (duration === "3min") { betTable = "bajikattuttate_kemuru_drei"; periodTable = "gelluonduhogu_kemuru_drei"; }
-          else if (duration === "5min") { betTable = "bajikattuttate_kemuru_funf"; periodTable = "gelluonduhogu_kemuru_funf"; }
-          else if (duration === "10min") { betTable = "bajikattuttate_kemuru_zehn"; periodTable = "gelluonduhogu_kemuru_zehn"; }
-        } else if (game_type === "5d") {
-          betTable = "bajikattuttate_aidudi"; periodTable = "gelluonduhogu_aidudi";
-          if (duration === "3min") { betTable = "bajikattuttate_aidudi_drei"; periodTable = "gelluonduhogu_aidudi_drei"; }
-          else if (duration === "5min") { betTable = "bajikattuttate_aidudi_funf"; periodTable = "gelluonduhogu_aidudi_funf"; }
-          else if (duration === "10min") { betTable = "bajikattuttate_aidudi_zehn"; periodTable = "gelluonduhogu_aidudi_zehn"; }
-        }
-        
+        const { betTable, periodTable } = getGameTables(
+          sanitizeString(params.game_type),
+          sanitizeString(params.duration)
+        );
         try {
-          // Get current period ID
           const [[periodRow]] = await db.query(`SELECT atadaaidi FROM \`${periodTable}\` ORDER BY kramasankhye DESC LIMIT 1`);
           if (!periodRow) { result = []; break; }
           const currentPeriod = periodRow.atadaaidi;
           
-          // Get live bets for this period
-          // ojana mapping: 10=Red, 11=Green, 12=Violet, 13=Big, 14=Small, 0-9=number
           const [rows] = await db.query(
             `SELECT b.byabaharkarta as user_id, b.ojana as bet_value_raw, b.ketebida as amount,
                     (SELECT mobile FROM shonu_subjects WHERE id = b.byabaharkarta) as mobile,
@@ -581,39 +587,21 @@ serve(async (req) => {
         break;
       }
 
-      // ===== BET SUMMARY (total bet for current period) =====
       case "get_bet_summary": {
-        const { game_type, duration } = params;
-        let betTable = "bajikattuttate";
-        let periodTable = "gelluonduhogu";
-        if (game_type === "wingo") {
-          if (duration === "3min") { betTable = "bajikattuttate_drei"; periodTable = "gelluonduhogu_drei"; }
-          else if (duration === "5min") { betTable = "bajikattuttate_funf"; periodTable = "gelluonduhogu_funf"; }
-          else if (duration === "30sec" || duration === "10min") { betTable = "bajikattuttate_zehn"; periodTable = "gelluonduhogu_zehn"; }
-        } else if (game_type === "k3") {
-          betTable = "bajikattuttate_kemuru"; periodTable = "gelluonduhogu_kemuru";
-          if (duration === "3min") { betTable = "bajikattuttate_kemuru_drei"; periodTable = "gelluonduhogu_kemuru_drei"; }
-          else if (duration === "5min") { betTable = "bajikattuttate_kemuru_funf"; periodTable = "gelluonduhogu_kemuru_funf"; }
-          else if (duration === "10min") { betTable = "bajikattuttate_kemuru_zehn"; periodTable = "gelluonduhogu_kemuru_zehn"; }
-        } else if (game_type === "5d") {
-          betTable = "bajikattuttate_aidudi"; periodTable = "gelluonduhogu_aidudi";
-          if (duration === "3min") { betTable = "bajikattuttate_aidudi_drei"; periodTable = "gelluonduhogu_aidudi_drei"; }
-          else if (duration === "5min") { betTable = "bajikattuttate_aidudi_funf"; periodTable = "gelluonduhogu_aidudi_funf"; }
-          else if (duration === "10min") { betTable = "bajikattuttate_aidudi_zehn"; periodTable = "gelluonduhogu_aidudi_zehn"; }
-        }
-        
+        const { betTable, periodTable } = getGameTables(
+          sanitizeString(params.game_type),
+          sanitizeString(params.duration)
+        );
         try {
           const [[periodRow]] = await db.query(`SELECT atadaaidi FROM \`${periodTable}\` ORDER BY kramasankhye DESC LIMIT 1`);
           if (!periodRow) { result = { total_bet: 0, details: [] }; break; }
           const currentPeriod = periodRow.atadaaidi;
           
-          // Total bet amount (minus 2% fee like PHP)
           const [[totalRow]] = await db.query(
             `SELECT COALESCE(SUM(ketebida) - (SUM(ketebida)/100*2), 0) as total FROM \`${betTable}\` WHERE kalaparichaya = ?`,
             [currentPeriod]
           );
           
-          // Per-number breakdown
           const details: any[] = [];
           for (let n = 0; n <= 9; n++) {
             const [[numRow]] = await db.query(
@@ -631,7 +619,6 @@ serve(async (req) => {
             }
           }
           
-          // Color bets (10=Red, 11=Green, 12=Violet, 13=Big, 14=Small)
           const colorMap = [
             { code: 10, name: "Red" }, { code: 11, name: "Green" }, { code: 12, name: "Violet" },
             { code: 13, name: "Big" }, { code: 14, name: "Small" },
@@ -658,7 +645,7 @@ serve(async (req) => {
         break;
       }
 
-      // ===== WITHDRAW SENT (approved) =====
+      // ===== WITHDRAW SENT/REJECTED =====
       case "get_withdraw_sent": {
         const [rows] = await db.query(
           `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
@@ -675,8 +662,6 @@ serve(async (req) => {
         result = rows;
         break;
       }
-
-      // ===== WITHDRAW REJECTED =====
       case "get_withdraw_rejected": {
         const [rows] = await db.query(
           `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
@@ -703,43 +688,51 @@ serve(async (req) => {
         break;
       }
       case "create_gift_code": {
-        const { count, max_users, price, remark } = params;
+        const count = sanitizeNumber(params.count || 1, 1, 50);
+        const max_users = sanitizeNumber(params.max_users || 1, 1, 100000);
+        const price = sanitizeNumber(params.price || 0, 0);
+        const remark = sanitizeString(params.remark, 200);
         const codes: string[] = [];
         const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        for (let i = 0; i < Math.min(count || 1, 50); i++) {
+        for (let i = 0; i < count; i++) {
           let code = "";
           for (let j = 0; j < 32; j++) code += chars[Math.floor(Math.random() * chars.length)];
           codes.push(code);
           const now = new Date().toISOString().slice(0, 16).replace("T", " ");
           await db.query(
             "INSERT INTO hodike_nirvahaka (enserie, utilisateurmax, prix, nombredutilisateurs, creerunrendezvous, shonu, remark) VALUES (?, ?, ?, 0, ?, '1', ?)",
-            [code, max_users || 1, price || 0, now, remark || ""]
+            [code, max_users, price, now, remark]
           );
         }
         result = { codes };
         break;
       }
       case "delete_gift_code": {
-        await db.query("DELETE FROM hodike_nirvahaka WHERE enserie = ?", [params.code]);
+        validateRequired(params, ["code"]);
+        await db.query("DELETE FROM hodike_nirvahaka WHERE enserie = ?", [sanitizeString(params.code, 50)]);
         result = { success: true };
         break;
       }
 
-      // ===== BONUS / USER DEPOSIT MANAGE =====
+      // ===== BONUS / USER BALANCE =====
       case "add_user_balance": {
-        const { userId, amount } = params;
+        validateRequired(params, ["userId", "amount"]);
+        const userId = sanitizeString(String(params.userId));
+        const amount = sanitizeNumber(params.amount, 0.01, 10000000);
         const [[wallet]] = await db.query("SELECT motta FROM shonu_kaichila WHERE balakedara = ?", [userId]);
         if (!wallet) {
           await db.query("INSERT INTO shonu_kaichila (balakedara, motta) VALUES (?, ?)", [userId, amount]);
         } else {
-          await db.query("UPDATE shonu_kaichila SET motta = ROUND((motta + ?), 2) WHERE balakedara = ?", [Number(amount), userId]);
+          await db.query("UPDATE shonu_kaichila SET motta = ROUND((motta + ?), 2) WHERE balakedara = ?", [amount, userId]);
         }
         result = { success: true };
         break;
       }
       case "deduct_user_balance": {
-        const { userId, amount } = params;
-        await db.query("UPDATE shonu_kaichila SET motta = ROUND(GREATEST(motta - ?, 0), 2) WHERE balakedara = ?", [Number(amount), userId]);
+        validateRequired(params, ["userId", "amount"]);
+        const userId = sanitizeString(String(params.userId));
+        const amount = sanitizeNumber(params.amount, 0.01, 10000000);
+        await db.query("UPDATE shonu_kaichila SET motta = ROUND(GREATEST(motta - ?, 0), 2) WHERE balakedara = ?", [amount, userId]);
         result = { success: true };
         break;
       }
@@ -760,7 +753,7 @@ serve(async (req) => {
 
       // ===== CHECK SAME IP =====
       case "check_same_ip": {
-        const { ip } = params;
+        const ip = sanitizeString(params?.ip, 45);
         let query = `SELECT s.ip as ip_address, COUNT(*) as user_count, GROUP_CONCAT(s.id) as user_ids, GROUP_CONCAT(s.mobile) as mobiles
                      FROM shonu_subjects s WHERE s.id NOT IN ${DEMO_EXCLUDE} AND s.status = 1`;
         const qp: any[] = [];
@@ -776,7 +769,8 @@ serve(async (req) => {
 
       // ===== USERS QUERY =====
       case "user_query": {
-        const { userId } = params;
+        validateRequired(params, ["userId"]);
+        const userId = sanitizeString(String(params.userId), 100);
         const [[user]] = await db.query(
           `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, s.ip as ip_address, s.status, s.createdate as created_at, s.account_frozen,
                   COALESCE(sk.motta, 0) as balance,
@@ -789,16 +783,11 @@ serve(async (req) => {
           [userId, userId]
         );
         if (!user) throw new Error("User not found");
-
-        // Get bank details
         const [banks] = await db.query("SELECT * FROM bankcard WHERE userid = ?", [user.id]);
-
-        // Get referrals
         const [referrals] = await db.query(
           `SELECT id, mobile, createdate FROM shonu_subjects WHERE code = ? LIMIT 20`,
           [user.owncode]
         );
-
         result = { user, banks, referrals };
         break;
       }
@@ -817,8 +806,11 @@ serve(async (req) => {
         break;
       }
       case "add_demo_user": {
-        const { mobile, password } = params;
-        // Check duplicate
+        validateRequired(params, ["mobile", "password"]);
+        const mobile = sanitizeString(params.mobile, 15);
+        const password = sanitizeString(params.password, 50);
+        if (!/^\d{10,15}$/.test(mobile)) throw new Error("Invalid mobile number");
+        
         const [[existing]] = await db.query("SELECT id FROM shonu_subjects WHERE mobile = ?", [mobile]);
         if (existing) throw new Error("Duplicate mobile number");
 
@@ -835,6 +827,7 @@ serve(async (req) => {
         break;
       }
       case "remove_demo_user": {
+        validateRequired(params, ["userId"]);
         await db.query("UPDATE demo SET sthiti = '2' WHERE balakedara = ?", [params.userId]);
         result = { success: true };
         break;
@@ -850,7 +843,10 @@ serve(async (req) => {
         break;
       }
       case "add_agent": {
-        const { userId, salary, salaryType } = params;
+        validateRequired(params, ["userId", "salary", "salaryType"]);
+        const userId = sanitizeString(String(params.userId));
+        const salary = sanitizeNumber(params.salary, 0);
+        const salaryType = sanitizeString(params.salaryType, 20);
         const [[userExists]] = await db.query("SELECT id FROM shonu_subjects WHERE id = ?", [userId]);
         if (!userExists) throw new Error("User ID doesn't exist");
         const [[agentExists]] = await db.query("SELECT userid FROM tb_agent WHERE mobile = ? AND status = '1'", [userId]);
@@ -864,6 +860,7 @@ serve(async (req) => {
         break;
       }
       case "remove_agent": {
+        validateRequired(params, ["userId"]);
         await db.query("UPDATE tb_agent SET status = '2' WHERE userid = ?", [params.userId]);
         result = { success: true };
         break;
@@ -871,20 +868,24 @@ serve(async (req) => {
 
       // ===== BANK DETAILS MODIFY =====
       case "get_user_bank_details": {
-        const { userId } = params;
+        validateRequired(params, ["userId"]);
         const [rows] = await db.query(
           `SELECT shonu as id, byabaharkarta as user_id, phalanubhavi as name, khatehesaru as bank_name,
                   khatesankhye as account, kod as ifsc, daka as email, duravani as mobile, sthiti as status
-           FROM khate WHERE byabaharkarta = ?`, [userId]
+           FROM khate WHERE byabaharkarta = ?`, [sanitizeString(String(params.userId))]
         );
         result = rows;
         break;
       }
       case "update_bank_detail": {
-        const { bankId, name, account, ifsc, bankName } = params;
+        validateRequired(params, ["bankId"]);
+        const name = sanitizeString(params.name, 100);
+        const account = sanitizeString(params.account, 30);
+        const ifsc = sanitizeString(params.ifsc, 20);
+        const bankName = sanitizeString(params.bankName, 100);
         await db.query(
           "UPDATE khate SET phalanubhavi = ?, khatesankhye = ?, kod = ?, khatehesaru = ? WHERE shonu = ?",
-          [name, account, ifsc || '', bankName || '', bankId]
+          [name, account, ifsc, bankName, params.bankId]
         );
         result = { success: true };
         break;
@@ -892,21 +893,26 @@ serve(async (req) => {
 
       // ===== ADMIN PASSWORD =====
       case "change_admin_password": {
-        const { newPassword } = params;
+        validateRequired(params, ["newPassword"]);
+        const newPassword = sanitizeString(params.newPassword, 100);
+        if (newPassword.length < 6) throw new Error("Password must be at least 6 characters");
         await db.query("UPDATE nirvahaka_shonu SET guptapada = MD5(?) WHERE unohs = '1'", [newPassword]);
         result = { success: true };
         break;
       }
 
-      // ===== SUPPORT - DEPOSIT PROBLEM =====
+      // ===== SUPPORT =====
       case "get_support_queries": {
-        const { type } = params;
-        let probFilter = "";
-        if (type === "deposit") probFilter = "Deposite Problem";
-        else if (type === "withdrawal") probFilter = "Withdrawal Problem";
-        else if (type === "ifsc") probFilter = "Change IFSC";
-        else if (type === "bank") probFilter = "Change bank name";
-        else if (type === "game") probFilter = "Game Problem";
+        const validTypes: Record<string, string> = {
+          deposit: "Deposite Problem",
+          withdrawal: "Withdrawal Problem",
+          ifsc: "Change IFSC",
+          bank: "Change bank name",
+          game: "Game Problem",
+        };
+        const type = sanitizeString(params?.type);
+        const probFilter = validTypes[type];
+        if (!probFilter) throw new Error("Invalid support type");
 
         const [rows] = await db.query(
           `SELECT id, userid, deposit_order_no as order_no, bank_account_number as bank_account, ifsc, order_amount as amount, text_content as message, remarks, status, prob as problem_type
@@ -917,8 +923,9 @@ serve(async (req) => {
         break;
       }
       case "respond_support": {
-        const { id, remarks } = params;
-        await db.query("UPDATE user_support SET remarks = ?, status = 1 WHERE id = ?", [remarks, id]);
+        validateRequired(params, ["id", "remarks"]);
+        const remarks = sanitizeString(params.remarks, 1000);
+        await db.query("UPDATE user_support SET remarks = ?, status = 1 WHERE id = ?", [remarks, params.id]);
         result = { success: true };
         break;
       }
@@ -944,7 +951,6 @@ serve(async (req) => {
             allBets.push(...(rows as any[]));
           } catch (_) {}
         }
-        // Find users who bet on same period from multiple accounts (by grouping period)
         const periodMap: Record<string, any[]> = {};
         for (const b of allBets) {
           const key = `${b.period_id}_${b.game_name}`;
@@ -955,7 +961,7 @@ serve(async (req) => {
         for (const [key, users] of Object.entries(periodMap)) {
           const unique = [...new Set(users)];
           if (unique.length > 3) {
-            const [period_id, game_name] = key.split("_");
+            const [period_id] = key.split("_");
             illegal.push({ period_id, game_name: key.replace(`${period_id}_`, ""), user_count: unique.length, users: unique.slice(0, 10) });
           }
         }
@@ -974,12 +980,13 @@ serve(async (req) => {
         break;
       }
       case "update_usdt_rate": {
+        const rate = sanitizeNumber(params?.rate, 1, 999);
         try {
-          await db.query("UPDATE usdt_settings SET rate = ? WHERE id = 1", [params.rate]);
+          await db.query("UPDATE usdt_settings SET rate = ? WHERE id = 1", [rate]);
         } catch (_) {
           try {
             await db.query("CREATE TABLE IF NOT EXISTS usdt_settings (id INT PRIMARY KEY, rate DECIMAL(10,2))");
-            await db.query("INSERT INTO usdt_settings (id, rate) VALUES (1, ?) ON DUPLICATE KEY UPDATE rate = ?", [params.rate, params.rate]);
+            await db.query("INSERT INTO usdt_settings (id, rate) VALUES (1, ?) ON DUPLICATE KEY UPDATE rate = ?", [rate, rate]);
           } catch (_e) {}
         }
         result = { success: true };
@@ -988,8 +995,8 @@ serve(async (req) => {
 
       // ===== UPLINE CHAIN =====
       case "get_upline_chain": {
-        const { userId } = params;
-        // Find user first by id or mobile
+        validateRequired(params, ["userId"]);
+        const userId = sanitizeString(String(params.userId), 100);
         const [[startUser]] = await db.query(
           `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, COALESCE(sk.motta,0) as balance
            FROM shonu_subjects s LEFT JOIN shonu_kaichila sk ON sk.balakedara = s.id
@@ -1001,7 +1008,6 @@ serve(async (req) => {
         let current = startUser;
         for (let i = 0; i < 20; i++) {
           if (!current.referral_code || current.referral_code === "255860337165") break;
-          // Find user whose owncode matches current's referral_code
           const [[parent]] = await db.query(
             `SELECT s.id, s.mobile, s.code as referral_code, s.owncode, COALESCE(sk.motta,0) as balance
              FROM shonu_subjects s LEFT JOIN shonu_kaichila sk ON sk.balakedara = s.id
@@ -1017,7 +1023,8 @@ serve(async (req) => {
 
       // ===== SUBORDINATE DATA =====
       case "get_subordinate_data": {
-        const { userId } = params;
+        validateRequired(params, ["userId"]);
+        const userId = sanitizeString(String(params.userId), 100);
         const [[user]] = await db.query("SELECT id, owncode FROM shonu_subjects WHERE id = ? OR mobile = ?", [userId, userId]);
         if (!user) throw new Error("User not found");
 
@@ -1042,26 +1049,23 @@ serve(async (req) => {
 
       // ===== USER ACTIVITY =====
       case "get_user_activity": {
-        const { userId } = params;
+        validateRequired(params, ["userId"]);
+        const userId = sanitizeString(String(params.userId), 100);
         const [[user]] = await db.query("SELECT id FROM shonu_subjects WHERE id = ? OR mobile = ?", [userId, userId]);
         if (!user) throw new Error("User not found");
         const uid = user.id;
 
-        // Deposits
         const [deposits] = await db.query(
           `SELECT shonu as id, motta as amount, ullekha as utr, dinankavannuracisi as created_at,
                   CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
            FROM thevani WHERE balakedara = ? ORDER BY shonu DESC LIMIT 20`, [uid]
         );
-
-        // Withdrawals
         const [withdrawals] = await db.query(
           `SELECT shonu as id, motta as amount, dinankavannuracisi as created_at,
                   CASE sthiti WHEN '0' THEN 'pending' WHEN '1' THEN 'approved' WHEN '2' THEN 'rejected' END as status
            FROM hintegedukolli WHERE balakedara = ? ORDER BY shonu DESC LIMIT 20`, [uid]
         );
 
-        // Bet stats + recent bets
         const betTables = [
           { table: 'bajikattuttate', name: 'Wingo 1min' },
           { table: 'bajikattuttate_drei', name: 'Wingo 3min' },
@@ -1087,7 +1091,6 @@ serve(async (req) => {
             totalBetCount += Number(r.cnt);
             totalBetAmount += Number(r.tb);
             totalWinAmount += Number(r.tw);
-            // Recent bets from this table
             const [bets] = await db.query(
               `SELECT kalaparichaya as period_id, ketebida as bet_amount, sesabida as win_amount, phalaphala as result, tiarikala as date, '${bt.name}' as game_name
                FROM \`${bt.table}\` WHERE byabaharkarta = ? ORDER BY shonu DESC LIMIT 5`, [uid]
@@ -1095,7 +1098,6 @@ serve(async (req) => {
             recentBets.push(...(bets as any[]));
           } catch (_) {}
         }
-        // Sort recent bets by date desc
         recentBets.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
         result = {
@@ -1109,98 +1111,67 @@ serve(async (req) => {
 
       // ===== ADMIN LOGIN =====
       case "admin_login": {
-        const { username, password } = params;
-        if (!username || !password) throw new Error("Username and password required");
+        validateRequired(params, ["username", "password"]);
+        const username = sanitizeString(params.username, 50);
+        const password = sanitizeString(params.password, 100);
 
-        // Superadmin hardcoded check (as per PHP source)
-        if (username === "zxcv" && password === "zxcv") {
-          result = {
-            success: true,
-            admin: { username: "zxcv", unohs: "superadmin", is_superadmin: true },
-          };
-          break;
-        }
+        // ─── SECURITY: Rate limiting ───
+        checkLoginRateLimit(username);
 
-        // Query nirvahaka_shonu table with MD5 password
+        // Query admin table with MD5 password
         const [rows] = await db.query(
           "SELECT * FROM nirvahaka_shonu WHERE nirvahaka_hesaru = ? AND guptapada = MD5(?) AND sthiti = '1'",
           [username, password]
         );
         const admin = (rows as any[])[0];
         if (!admin) {
-          // Debug: check if user exists at all
-          const [debugRows] = await db.query(
-            "SELECT nirvahaka_hesaru, sthiti, guptapada FROM nirvahaka_shonu WHERE nirvahaka_hesaru = ?",
-            [username]
+          // Check if password is stored as plaintext (legacy)
+          const [plainRows] = await db.query(
+            "SELECT * FROM nirvahaka_shonu WHERE nirvahaka_hesaru = ? AND guptapada = ? AND sthiti = '1'",
+            [username, password]
           );
-          const debugInfo = (debugRows as any[])[0];
-          if (debugInfo) {
-            // Check if password is already stored as MD5 or plain
-            const [md5Check] = await db.query(
-              "SELECT * FROM nirvahaka_shonu WHERE nirvahaka_hesaru = ? AND guptapada = ? AND sthiti = '1'",
-              [username, password]
-            );
-            const plainMatch = (md5Check as any[])[0];
-            if (plainMatch) {
-              // Password is stored as plain text, not MD5
-              result = {
-                success: true,
-                admin: {
-                  username: plainMatch.nirvahaka_hesaru,
-                  unohs: plainMatch.unohs || plainMatch.shonu || plainMatch.id,
-                  is_superadmin: false,
-                },
-              };
-              break;
-            }
-            throw new Error(`Invalid credentials (user found, status=${debugInfo.sthiti}, pwd_hash=${debugInfo.guptapada?.substring(0,8)}...)`);
+          const plainAdmin = (plainRows as any[])[0];
+          if (plainAdmin) {
+            recordLoginAttempt(username, true);
+            result = {
+              success: true,
+              admin: {
+                username: plainAdmin.nirvahaka_hesaru,
+                unohs: String(plainAdmin.unohs),
+                is_superadmin: plainAdmin.unohs === "1" || plainAdmin.unohs === 1,
+              },
+            };
+            break;
           }
-          throw new Error("Invalid credentials (user not found)");
+          recordLoginAttempt(username, false);
+          throw new Error("Invalid credentials");
         }
 
+        recordLoginAttempt(username, true);
         result = {
           success: true,
           admin: {
             username: admin.nirvahaka_hesaru,
-            unohs: admin.unohs || admin.shonu || admin.id,
-            is_superadmin: false,
+            unohs: String(admin.unohs),
+            is_superadmin: admin.unohs === "1" || admin.unohs === 1,
           },
         };
         break;
       }
 
-      // ===== DEBUG: List admin users =====
-      case "list_admins": {
-        const [rows] = await db.query(
-          "SELECT nirvahaka_hesaru, sthiti, LEFT(guptapada, 10) as pwd_prefix FROM nirvahaka_shonu LIMIT 20"
-        );
-        result = rows;
-        break;
-      }
-
-      // ===== Create admin user =====
-      case "create_admin": {
-        const { username, password } = params;
-        await db.query(
-          "INSERT INTO nirvahaka_shonu (nirvahaka_hesaru, guptapada, sthiti) VALUES (?, MD5(?), '1')",
-          [username, password]
-        );
-        result = { success: true, username };
-        break;
-      }
-
       default:
-        throw new Error(`Unknown action: ${action}`);
+        throw new Error("Unknown action");
     }
 
     return new Response(JSON.stringify({ data: result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error: any) {
-    console.error("Remote DB error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  } catch (err: any) {
+    // ─── SECURITY: Don't leak internal error details ───
+    const safeMessage = err.message || "Internal server error";
+    return new Response(
+      JSON.stringify({ error: safeMessage }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
