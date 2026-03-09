@@ -244,26 +244,26 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email Field */}
+            {/* Username Field */}
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
               <label className="block text-[11px] font-bold text-muted-foreground mb-2.5 uppercase tracking-wider font-display">
-                Email Address
+                Username
               </label>
               <div className={`relative rounded-xl transition-all duration-300 ${
-                focused === 'email' ? 'ring-2 ring-primary/25' : ''
+                focused === 'username' ? 'ring-2 ring-primary/25' : ''
               }`}>
                 <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                  focused === 'email' ? 'text-primary' : 'text-muted-foreground/50'
+                  focused === 'username' ? 'text-primary' : 'text-muted-foreground/50'
                 }`}>
-                  <Mail className="w-4 h-4" />
+                  <User className="w-4 h-4" />
                 </div>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocused('email')}
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onFocus={() => setFocused('username')}
                   onBlur={() => setFocused(null)}
-                  placeholder="admin@aladdinn.com"
+                  placeholder="Enter your username"
                   required
                   className="w-full h-[52px] rounded-xl bg-card border border-border pl-12 pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
                 />
