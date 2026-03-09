@@ -104,7 +104,7 @@ export default function BalanceDeductionPage() {
               <Minus className="w-4 h-4" /> Deduct Balance
             </button>
             <button onClick={() => setAction("add")}
-              className={`flex-1 h-12 rounded-xl text-sm font-display font-bold flex items-center justify-center gap-2 transition-all duration-300 ${action === "add" ? "bg-emerald-500/10 text-emerald-500 border-2 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]" : "bg-secondary/50 text-muted-foreground border-2 border-transparent hover:bg-secondary"}`}>
+              className={`flex-1 h-12 rounded-xl text-sm font-display font-bold flex items-center justify-center gap-2 transition-all duration-300 ${action === "add" ? "bg-success/10 text-success border-2 border-success/50 shadow-[0_0_15px_hsl(var(--success)/0.2)]" : "bg-secondary/50 text-muted-foreground border-2 border-transparent hover:bg-secondary"}`}>
               <Plus className="w-4 h-4" /> Add Balance
             </button>
           </div>
@@ -116,8 +116,8 @@ export default function BalanceDeductionPage() {
                 className="search-input w-full h-12 pl-8 pr-4 font-mono font-bold text-lg" />
             </div>
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleSubmit} disabled={mutation.isPending}
-              className={`px-8 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-display font-bold text-white disabled:opacity-50 transition-all ${action === "deduct" ? "shadow-[0_4px_20px_hsl(var(--destructive)/0.3)] hover:shadow-[0_6px_25px_hsl(var(--destructive)/0.4)]" : "shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_25px_rgba(16,185,129,0.4)]"}`}
-              style={{ background: action === "deduct" ? 'linear-gradient(135deg, hsl(0, 72%, 51%), hsl(0, 62%, 41%))' : 'linear-gradient(135deg, hsl(160, 80%, 40%), hsl(160, 70%, 30%))' }}>
+              className={`px-8 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-display font-bold text-white disabled:opacity-50 transition-all ${action === "deduct" ? "shadow-[0_4px_20px_hsl(var(--destructive)/0.3)] hover:shadow-[0_6px_25px_hsl(var(--destructive)/0.4)]" : "shadow-[0_4px_20px_hsl(var(--success)/0.3)] hover:shadow-[0_6px_25px_hsl(var(--success)/0.4)]"}`}
+              style={{ background: action === "deduct" ? 'linear-gradient(135deg, hsl(0, 72%, 51%), hsl(0, 62%, 41%))' : 'linear-gradient(135deg, hsl(142, 71%, 45%), hsl(142, 65%, 35%))' }}>
               {mutation.isPending ? "Processing..." : action === "deduct" ? "Confirm Deduction" : "Confirm Addition"}
             </motion.button>
           </div>

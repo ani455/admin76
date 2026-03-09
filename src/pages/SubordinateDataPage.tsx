@@ -117,8 +117,8 @@ export default function SubordinateDataPage() {
                       <td className="font-mono text-xs font-medium">{r.id}</td>
                       <td className="font-medium">{r.mobile}</td>
                       <td className="text-right font-display font-bold">{fmt(r.balance)}</td>
-                      <td className="text-right font-display font-semibold text-emerald-500">{fmt(r.total_recharge)}</td>
-                      <td className="text-right font-display font-semibold text-orange-500">{fmt(r.total_withdraw)}</td>
+                      <td className="text-right font-display font-semibold text-success">{fmt(r.total_recharge)}</td>
+                      <td className="text-right font-display font-semibold text-warning">{fmt(r.total_withdraw)}</td>
                       <td className="text-xs text-muted-foreground">{r.created_at?.split(" ")[0] || "—"}</td>
                     </motion.tr>
                   ))}

@@ -179,9 +179,9 @@ export default function UsersActivityPage() {
                       <td className="text-xs font-semibold">{b.game_name}</td>
                       <td className="font-mono text-xs text-muted-foreground">{b.period_id}</td>
                       <td className="text-right font-display font-bold">{fmt(b.bet_amount)}</td>
-                      <td className="text-right font-display font-bold text-emerald-500">{fmt(b.win_amount)}</td>
+                      <td className="text-right font-display font-bold text-success">{fmt(b.win_amount)}</td>
                       <td>
-                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${b.result === "gagner" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${b.result === "gagner" ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
                           {b.result === "gagner" ? "Won" : "Lost"}
                         </span>
                       </td>
