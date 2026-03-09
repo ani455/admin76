@@ -259,7 +259,7 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
 // ─── Helper Components ───
 function InfoItem({ icon, label, value, mono }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
   return (
-    <div className="rounded-xl p-2.5" style={{ background: "hsl(225, 18%, 12%)" }}>
+    <div className="rounded-xl p-2.5" style={{ background: "hsl(var(--muted))" }}>
       <div className="flex items-center gap-1.5 mb-0.5">
         <span className="text-muted-foreground">{icon}</span>
         <span className="text-[10px] text-muted-foreground uppercase">{label}</span>
