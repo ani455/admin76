@@ -373,13 +373,11 @@ export default function ManageUsersPage() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setShowFilters(f => !f)}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${showFilters ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}
-            style={!showFilters ? { border: "1px solid hsl(225, 15%, 22%)" } : {}}>
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all border border-border ${showFilters ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}>
             <Filter className="w-4 h-4" />
           </button>
           <button onClick={() => queryClient.invalidateQueries({ queryKey: ["manage-users"] })}
-            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-all"
-            style={{ border: "1px solid hsl(225, 15%, 22%)" }}>
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-all border border-border">
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${isFetching ? "animate-spin" : ""}`} />
           </button>
           <div className="relative w-full sm:w-72">
