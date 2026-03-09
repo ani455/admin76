@@ -105,7 +105,7 @@ function NodeBackground() {
 export default function LoginPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
