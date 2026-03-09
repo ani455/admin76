@@ -120,6 +120,8 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // Use username as email for Supabase auth
+    const email = username.includes('@') ? username : `${username}@rivestro.admin`;
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error("Login failed: " + error.message);
