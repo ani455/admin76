@@ -663,13 +663,13 @@ serve(async (req) => {
         const [rows] = await db.query(
           `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
                   w.dharavahi as order_id, w.dinankavannuracisi as created_at,
+                  w.tike as remark,
                   u.mobile as user_mobile,
-                  bc.name as bank_name, bc.account as account_no,
-                  k.kod as ifsc, w.tike as remark
+                  k.khatehesaru as bank_name, k.khatesankhye as account_no,
+                  k.kod as ifsc, k.phalanubhavi as holder_name
            FROM hintegedukolli w
            LEFT JOIN shonu_subjects u ON u.id = w.balakedara
-           LEFT JOIN bankcard bc ON bc.id = w.khateshonu
-           LEFT JOIN khate k ON k.shonu = w.khateshonu
+           LEFT JOIN khate k ON k.byabaharkarta = w.balakedara AND k.sthiti = 'active'
            WHERE w.sthiti = '1' ORDER BY w.shonu DESC LIMIT 100`
         );
         result = rows;
@@ -681,13 +681,13 @@ serve(async (req) => {
         const [rows] = await db.query(
           `SELECT w.shonu as id, w.balakedara as user_id, w.motta as amount,
                   w.dharavahi as order_id, w.dinankavannuracisi as created_at,
+                  w.tike as remark,
                   u.mobile as user_mobile,
-                  bc.name as bank_name, bc.account as account_no,
-                  k.kod as ifsc, w.tike as remark
+                  k.khatehesaru as bank_name, k.khatesankhye as account_no,
+                  k.kod as ifsc, k.phalanubhavi as holder_name
            FROM hintegedukolli w
            LEFT JOIN shonu_subjects u ON u.id = w.balakedara
-           LEFT JOIN bankcard bc ON bc.id = w.khateshonu
-           LEFT JOIN khate k ON k.shonu = w.khateshonu
+           LEFT JOIN khate k ON k.byabaharkarta = w.balakedara AND k.sthiti = 'active'
            WHERE w.sthiti = '2' ORDER BY w.shonu DESC LIMIT 100`
         );
         result = rows;
