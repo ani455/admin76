@@ -472,7 +472,7 @@ export default function ManageUsersPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: "1px solid hsl(225, 15%, 12%)", background: "hsl(228, 22%, 8%)" }}>
+              <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}>
                 <p className="text-[11px] text-muted-foreground font-medium">{(page - 1) * perPage + 1}–{Math.min(page * perPage, totalCount)} of {totalCount}</p>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setPage(1)} disabled={page === 1}

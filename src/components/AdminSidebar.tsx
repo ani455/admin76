@@ -153,8 +153,8 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
               <Shield className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="text-[14px] font-bold text-sidebar-foreground truncate leading-tight font-display tracking-tight">
-                ALADDINN
+              <p className="text-[14px] font-bold text-sidebar-foreground truncate leading-tight tracking-tight italic" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Rivestro
               </p>
               <p className="text-[10px] text-sidebar-foreground/50 font-medium leading-tight font-mono">
                 Admin v2.0
