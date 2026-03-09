@@ -90,7 +90,7 @@ export default function UsersActivityPage() {
           {/* Recent Deposits */}
           <motion.div variants={itemVariants} className="glass-card-solid rounded-2xl overflow-hidden mb-6 shadow-sm border-border/50">
             <div className="p-5 border-b border-border/50 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/10 text-emerald-500">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-success/10 text-success">
                 <ArrowDownToLine className="w-4 h-4" />
               </div>
               <h3 className="text-base font-bold text-foreground font-display">Recent Deposits <span className="text-muted-foreground font-normal ml-1">({data.deposits?.length || 0})</span></h3>
@@ -108,10 +108,10 @@ export default function UsersActivityPage() {
                   {(data.deposits || []).map((d: any, i: number) => (
                     <motion.tr initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={d.id} className="table-row-hover">
                       <td className="font-mono text-xs font-medium">{d.id}</td>
-                      <td className="text-right font-bold font-display text-emerald-500">{fmt(d.amount)}</td>
+                      <td className="text-right font-bold font-display text-success">{fmt(d.amount)}</td>
                       <td className="text-xs font-mono">{d.utr || "—"}</td>
                       <td>
-                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border ${d.status === "approved" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : d.status === "rejected" ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-orange-500/10 text-orange-500 border-orange-500/20"}`}>{d.status}</span>
+                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border ${d.status === "approved" ? "bg-success/10 text-success border-success/20" : d.status === "rejected" ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-warning/10 text-warning border-warning/20"}`}>{d.status}</span>
                       </td>
                       <td className="text-xs text-muted-foreground">{d.created_at?.split(" ")[0] || "—"}</td>
                     </motion.tr>
