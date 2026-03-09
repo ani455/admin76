@@ -156,7 +156,7 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(225, 18%, 13%)" }}>
+            <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted))" }}>
               {tabs.map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${
