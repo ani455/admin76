@@ -50,12 +50,19 @@ export default function BankDetailsPage() {
         </motion.button>
       </div>
 
+      {searched && banks.length === 0 && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card-solid rounded-2xl p-8 text-center">
+          <CreditCard className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground font-medium">No bank details found for this user</p>
+        </motion.div>
+      )}
+
       {banks.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {banks.map((bank: any, idx: number) => (
             <div key={bank.id} className="glass-card-solid rounded-2xl p-6">
               <h3 className="text-sm font-bold text-foreground font-display mb-4">Bank #{idx + 1}</h3>
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-[0.1em] font-display">Name</label>
                   <input type="text" defaultValue={bank.name} className="search-input !pl-4" id={`name-${bank.id}`} />
