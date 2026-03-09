@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
+import { Eye, EyeOff, Lock, User, ArrowRight, Shield, Zap, Users, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -105,7 +105,7 @@ function NodeBackground() {
 export default function LoginPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -120,6 +120,8 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // Use username as email for Supabase auth
+    const email = username.includes('@') ? username : `${username}@rivestro.admin`;
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error("Login failed: " + error.message);
@@ -169,7 +171,7 @@ export default function LoginPage() {
               <Shield className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white tracking-tight font-display">ALADDINN</h2>
+              <h2 className="text-3xl font-black text-white tracking-tight italic" style={{ fontFamily: "'Playfair Display', serif" }}>Rivestro</h2>
               <p className="text-xs text-white/60 font-medium font-mono">Control Panel v2.0</p>
             </div>
           </motion.div>
@@ -232,7 +234,7 @@ export default function LoginPage() {
               <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary">
                 <Shield className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground font-display">ALADDINN</span>
+              <span className="text-2xl font-black text-foreground italic" style={{ fontFamily: "'Playfair Display', serif" }}>Rivestro</span>
             </motion.div>
           </div>
 
@@ -242,26 +244,26 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email Field */}
+            {/* Username Field */}
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
               <label className="block text-[11px] font-bold text-muted-foreground mb-2.5 uppercase tracking-wider font-display">
-                Email Address
+                Username
               </label>
               <div className={`relative rounded-xl transition-all duration-300 ${
-                focused === 'email' ? 'ring-2 ring-primary/25' : ''
+                focused === 'username' ? 'ring-2 ring-primary/25' : ''
               }`}>
                 <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                  focused === 'email' ? 'text-primary' : 'text-muted-foreground/50'
+                  focused === 'username' ? 'text-primary' : 'text-muted-foreground/50'
                 }`}>
-                  <Mail className="w-4 h-4" />
+                  <User className="w-4 h-4" />
                 </div>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocused('email')}
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onFocus={() => setFocused('username')}
                   onBlur={() => setFocused(null)}
-                  placeholder="admin@aladdinn.com"
+                  placeholder="Enter your username"
                   required
                   className="w-full h-[52px] rounded-xl bg-card border border-border pl-12 pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all duration-300 focus:border-primary/40"
                 />
