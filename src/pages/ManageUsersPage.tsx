@@ -395,7 +395,7 @@ export default function ManageUsersPage() {
         {showFilters && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="mb-4 overflow-hidden">
-            <div className="flex flex-wrap gap-2 p-3 rounded-xl" style={{ background: "hsl(225, 18%, 13%)", border: "1px solid hsl(225, 15%, 18%)" }}>
+            <div className="flex flex-wrap gap-2 p-3 rounded-xl" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider self-center mr-2">Status:</span>
               {(["all", "active", "frozen"] as StatusFilter[]).map(s => (
                 <button key={s} onClick={() => setStatusFilter(s)}
