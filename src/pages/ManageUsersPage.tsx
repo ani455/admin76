@@ -61,7 +61,7 @@ function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => 
         initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
         className="relative w-full max-w-[560px] h-full overflow-y-auto"
-        style={{ background: "hsl(225, 20%, 10%)", borderLeft: "1px solid hsl(225, 15%, 18%)" }}
+        style={{ background: "hsl(var(--card))", borderLeft: "1px solid hsl(var(--border))" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
