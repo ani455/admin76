@@ -1094,6 +1094,41 @@ serve(async (req) => {
         break;
       }
 
+      // ===== ADMIN LOGIN =====
+      case "admin_login": {
+        const { username, password } = params;
+        if (!username || !password) throw new Error("Username and password required");
+
+        // Superadmin hardcoded check (as per PHP source)
+        if (username === "zxcv" && password === "zxcv") {
+          result = {
+            success: true,
+            admin: { username: "zxcv", unohs: "superadmin", is_superadmin: true },
+          };
+          break;
+        }
+
+        // Query nirvahaka_shonu table with MD5 password
+        const [rows] = await db.query(
+          "SELECT * FROM nirvahaka_shonu WHERE nirvahaka_hesaru = ? AND guptapada = MD5(?) AND sthiti = '1'",
+          [username, password]
+        );
+        const admin = (rows as any[])[0];
+        if (!admin) {
+          throw new Error("Invalid credentials");
+        }
+
+        result = {
+          success: true,
+          admin: {
+            username: admin.nirvahaka_hesaru,
+            unohs: admin.unohs || admin.shonu || admin.id,
+            is_superadmin: false,
+          },
+        };
+        break;
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`);
     }
